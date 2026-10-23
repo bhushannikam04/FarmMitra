@@ -135,8 +135,8 @@ This project is licensed under the MIT License. See the `LICENSE` file for detai
 
 ## 👤 Author
 
-**[Your Name]**
-- LinkedIn: [your-profile-link]
+**[Bhushan Nikam]**
+- LinkedIn: [https://www.linkedin.com/in/bhushan-nikam-ss1932010]
 - GitHub: [@bhushannikam04](https://github.com/bhushannikam04)
 
 ---
