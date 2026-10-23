@@ -1,0 +1,62 @@
+@model PagedResult<Product>
+@{
+    ViewData["Title"] = "My Products";
+    ViewData["Placeholder"] = "Search by product name or category...";
+    ViewData["Statuses"] = new[] { "Available", "Pending", "OutOfStock" };
+}
+
+<div class="dash-content-head">
+    <div>
+        <h1>My Products</h1>
+        <p>Manage what you sell on Farm Mitra.</p>
+    </div>
+    <a asp-area="Farmer" asp-controller="Products" asp-action="Create" class="btn btn-primary"><i class="fa-solid fa-plus"></i> Add Product</a>
+</div>
+
+<div class="dash-panel">
+    <partial name="_ListToolbar" model="(IPaged)Model" />
+
+    <div class="table-scroll">
+        <table class="data-table">
+            <thead>
+                <tr><th>Product</th><th>Category</th><th>Price</th><th>Quantity</th><th>Status</th><th>Date</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model.Items)
+                {
+                    <tr>
+                        <td>
+                            <div class="table-product">
+                                <img src="@(string.IsNullOrEmpty(p.ImagePath) ? "/images/placeholder.svg" : p.ImagePath)" alt="" onerror="this.onerror=null;this.src='/images/placeholder.svg';" />
+                                @p.Name
+                            </div>
+                        </td>
+                        <td>@p.Category</td>
+                        <td>₹@p.Price.ToString("N0") / @p.Unit</td>
+                        <td>@p.Quantity @p.Unit</td>
+                        <td>
+                            <span class="badge @BadgeHelper.Css(p.Status)" title="@(p.Status == "Pending" ? "Hidden from the marketplace until an admin approves it" : "")">@BadgeHelper.Label(p.Status)</span>
+                        </td>
+                        <td>@p.CreatedAt.ToString("dd MMM yyyy")</td>
+                        <td>
+                            <div class="table-actions">
+                                <a asp-area="" asp-controller="Marketplace" asp-action="Details" asp-route-id="@p.Id" target="_blank" class="act" title="View in marketplace"><i class="fa-solid fa-eye"></i></a>
+                                <a asp-area="Farmer" asp-controller="Products" asp-action="Edit" asp-route-id="@p.Id" class="act" title="Edit"><i class="fa-solid fa-pen"></i></a>
+                                <form asp-area="Farmer" asp-controller="Products" asp-action="Delete" asp-route-id="@p.Id" method="post"
+                                      data-confirm="&quot;@p.Name&quot; will be permanently deleted." data-confirm-title="Delete product?" data-confirm-button="Delete" data-danger="true">
+                                    <button type="submit" class="danger" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Items.Any())
+                {
+                    <tr class="empty-row"><td colspan="7">No products found.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <partial name="_Pager" model="(IPaged)Model" />
+</div>

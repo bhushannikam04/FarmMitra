@@ -1,0 +1,58 @@
+@model PagedResult<OrderRow>
+@{
+    ViewData["Title"] = "Orders";
+    ViewData["Placeholder"] = "Search order number or buyer...";
+    ViewData["Statuses"] = new[] { "Pending", "Confirmed", "Shipped", "Delivered", "Cancelled" };
+    var returnUrl = Context.Request.Path + Context.Request.QueryString;
+    var allStatuses = new[] { "Pending", "Confirmed", "Shipped", "Delivered", "Cancelled" };
+}
+
+<div class="dash-content-head">
+    <div>
+        <h1>Orders</h1>
+        <p>Track every order placed on the platform.</p>
+    </div>
+</div>
+
+<div class="dash-panel">
+    <partial name="_ListToolbar" model="(IPaged)Model" />
+
+    <div class="table-scroll">
+        <table class="data-table">
+            <thead>
+                <tr><th>Order</th><th>Buyer</th><th>Items</th><th>Total</th><th>Date</th><th>Status</th><th>Update</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var o in Model.Items)
+                {
+                    <tr>
+                        <td>#FM-@o.Id</td>
+                        <td>@o.BuyerName<span class="cell-sub">@o.BuyerEmail</span></td>
+                        <td>@o.ItemCount</td>
+                        <td>₹@o.Total.ToString("N0")</td>
+                        <td>@o.OrderDate.ToString("dd MMM yyyy")</td>
+                        <td><span class="badge @BadgeHelper.Css(o.Status)">@o.Status</span></td>
+                        <td>
+                            <form asp-area="Admin" asp-controller="Orders" asp-action="UpdateStatus" asp-route-id="@o.Id" method="post" class="flex gap-8 items-center">
+                                <input type="hidden" name="returnUrl" value="@returnUrl" />
+                                <select name="status" class="input select-sm" aria-label="New status">
+                                    @foreach (var s in allStatuses)
+                                    {
+                                        <option value="@s" selected="@(s == o.Status)">@s</option>
+                                    }
+                                </select>
+                                <button type="submit" class="btn btn-secondary btn-sm">Save</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Items.Any())
+                {
+                    <tr class="empty-row"><td colspan="7">No orders yet. They will show up here once buyers start checking out.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <partial name="_Pager" model="(IPaged)Model" />
+</div>

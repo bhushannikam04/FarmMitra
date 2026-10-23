@@ -1,0 +1,46 @@
+/* ============================================================
+   FARM MITRA - LANGUAGE PICKER (uses the same colour tokens, so dark mode works)
+   ============================================================ */
+.lang-picker { position: relative; flex: 0 0 auto; }
+.lang-btn { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; white-space: nowrap; }
+.lang-btn .lang-label { max-width: 110px; overflow: hidden; text-overflow: ellipsis; }
+.lang-btn .fa-chevron-down { font-size: .65rem; opacity: .7; transition: transform .18s var(--ease); }
+.lang-picker.open .lang-btn .fa-chevron-down { transform: rotate(180deg); }
+
+.lang-menu {
+    display: none; position: absolute; right: 0; top: calc(100% + 8px); z-index: 400;
+    width: 280px; max-height: min(420px, 70vh); overflow-y: auto; padding: 6px;
+    background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+}
+.lang-picker.open .lang-menu { display: block; }
+.lang-item {
+    display: flex; align-items: baseline; justify-content: space-between; gap: 12px; width: 100%;
+    padding: 9px 12px; border: 0; background: transparent; border-radius: var(--radius-sm);
+    color: var(--text-dark); font: inherit; font-size: .92rem; text-align: left; cursor: pointer;
+}
+.lang-item:hover { background: var(--primary-tint); }
+.lang-item.active { background: var(--primary-tint); font-weight: 600; }
+.lang-item.active::after { content: "\2713"; margin-left: 6px; color: var(--primary-light); }
+.lang-item .lang-native { font-size: 1rem; }
+.lang-item .lang-name { color: var(--text-light); font-size: .78rem; margin-left: auto; }
+
+.lang-toast {
+    position: fixed; left: 50%; bottom: 24px; z-index: 1000; max-width: min(92vw, 520px);
+    transform: translate(-50%, 20px); opacity: 0; transition: all .3s var(--ease);
+    background: var(--text-dark); color: var(--background); padding: 12px 18px; border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg); font-size: .9rem; line-height: 1.5;
+}
+.lang-toast.show { transform: translate(-50%, 0); opacity: 1; }
+
+/* ---- hide Google's own banner / tooltips; keep the page where it is ---- */
+body { top: 0 !important; }
+.goog-te-banner-frame, .goog-te-banner-frame.skiptranslate, iframe.skiptranslate,
+.VIpgJd-ZVi9od-aZ2wEe-wOHMyf, .VIpgJd-ZVi9od-ORHb-OEVmcd, #goog-gt-tt, .goog-te-balloon-frame { display: none !important; }
+.goog-text-highlight { background: none !important; box-shadow: none !important; }
+font { background: transparent !important; box-shadow: none !important; }
+
+@media (max-width: 640px) {
+    .lang-btn .lang-label { display: none; }
+    .lang-menu { position: fixed; left: 12px; right: 12px; top: 70px; width: auto; }
+}

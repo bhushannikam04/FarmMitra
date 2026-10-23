@@ -1,0 +1,58 @@
+@using FarmMitra.ViewModels
+@model InboxViewModel
+
+<div class="dash-content-head">
+    <div>
+        <h1>Messages</h1>
+        <p>@(Model.Area == "Buyer" ? "Your conversations with farmers." : "Your conversations with buyers.")</p>
+    </div>
+</div>
+
+<div class="chat-notice">
+    <i class="fa-solid fa-shield-halved"></i>
+    <span>To keep everyone safe, conversations on Farm Mitra can be reviewed by administrators. Please don't share passwords or payment details.</span>
+</div>
+
+<div class="dash-panel" style="padding:8px;">
+    @if (!Model.Rows.Any())
+    {
+        <div class="chat-empty">
+            <div class="feature-icon" style="margin:0 auto 16px; width:64px; height:64px; font-size:1.5rem; border-radius:50%;"><i class="fa-solid fa-comments"></i></div>
+            <h2>No conversations yet</h2>
+            <p>@(Model.Area == "Buyer"
+                ? "Open any product and tap Contact Farmer to start a conversation."
+                : "When a buyer contacts you about a product, the conversation shows up here.")</p>
+            @if (Model.Area == "Buyer")
+            {
+                <a asp-area="" asp-controller="Marketplace" asp-action="Index" class="btn btn-primary">Browse Marketplace</a>
+            }
+        </div>
+    }
+
+    @foreach (var c in Model.Rows)
+    {
+        var preview = string.IsNullOrEmpty(c.LastMessage) ? "No messages yet" : c.LastMessage.Length > 90 ? c.LastMessage[..90] + "..." : c.LastMessage;
+        <a asp-area="@Model.Area" asp-controller="Messages" asp-action="Thread" asp-route-id="@c.Id" class="inbox-item @(c.Unread > 0 ? "unread" : "")">
+            <div class="chat-avatar">@c.OtherName.Substring(0, 1).ToUpper()</div>
+            <div class="inbox-main">
+                <div class="inbox-top">
+                    <strong>@c.OtherName</strong>
+                    <span class="inbox-time">@c.LastMessageAt.ToLocalTime().ToString("dd MMM, hh:mm tt")</span>
+                </div>
+                @if (!string.IsNullOrEmpty(c.ProductName))
+                {
+                    <span class="chat-chip"><i class="fa-solid fa-box"></i> @c.ProductName</span>
+                }
+                <div class="inbox-preview">@preview</div>
+            </div>
+            @if (c.Unread > 0)
+            {
+                <span class="unread-dot">@c.Unread</span>
+            }
+            else if (c.IsClosed)
+            {
+                <span class="badge badge-neutral">Closed</span>
+            }
+        </a>
+    }
+</div>

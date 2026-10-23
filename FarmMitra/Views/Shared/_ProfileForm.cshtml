@@ -1,0 +1,124 @@
+@using FarmMitra.Services
+@model ProfileViewModel
+
+<div asp-validation-summary="ModelOnly" class="alert alert-danger" style="margin-bottom:18px;"></div>
+
+<div class="account-section-title">Profile photo</div>
+<div class="photo-edit">
+    <div class="photo-preview" id="photo-preview">
+        @if (!string.IsNullOrEmpty(Model.ProfileImagePath))
+        {
+            <img src="@Model.ProfileImagePath" alt="Your profile photo" />
+        }
+        else
+        {
+            <span>@(string.IsNullOrWhiteSpace(Model.FullName) ? "?" : Model.FullName.Trim().Substring(0, 1).ToUpper())</span>
+        }
+    </div>
+    <div class="photo-actions">
+        <label for="Photo" class="btn btn-outline btn-sm"><i class="fa-solid fa-camera"></i> Choose photo</label>
+        <input asp-for="Photo" type="file" accept="image/png,image/jpeg,image/webp" class="photo-input" />
+        @if (!string.IsNullOrEmpty(Model.ProfileImagePath))
+        {
+            <label class="photo-remove"><input type="checkbox" asp-for="RemovePhoto" /> Remove current photo</label>
+        }
+        <div class="pw-hint">JPG, PNG or WebP, up to 3 MB. A square photo looks best.</div>
+        <span asp-validation-for="Photo" class="field-error"></span>
+    </div>
+</div>
+<script>
+    (function () {
+        var input = document.getElementById('Photo');
+        var box = document.getElementById('photo-preview');
+        if (!input || !box) return;
+        input.addEventListener('change', function () {
+            var file = input.files && input.files[0];
+            if (!file) return;
+            if (file.size > 3 * 1024 * 1024) { alert('The image must be 3 MB or smaller.'); input.value = ''; return; }
+            var reader = new FileReader();
+            reader.onload = function (e) { box.innerHTML = '<img alt="New profile photo" src="' + e.target.result + '" />'; };
+            reader.readAsDataURL(file);
+        });
+    })();
+</script>
+
+<div class="account-section-title">Personal details</div>
+<div class="form-row">
+    <div class="field">
+        <label asp-for="FullName">Full Name</label>
+        <input asp-for="FullName" class="input" autocomplete="name" />
+        <span asp-validation-for="FullName" class="field-error"></span>
+    </div>
+    <div class="field">
+        <label asp-for="Phone">Mobile Number</label>
+        <input asp-for="Phone" class="input" autocomplete="tel" />
+        <span asp-validation-for="Phone" class="field-error"></span>
+    </div>
+</div>
+<div class="field">
+    <label>Email</label>
+    <input class="input" value="@Model.Email" readonly tabindex="-1" />
+    <div class="pw-hint">Your email is your login and can't be changed here.</div>
+</div>
+
+<div class="account-section-title">Address</div>
+<div class="field">
+    <label asp-for="Address">Address</label>
+    <input asp-for="Address" class="input" placeholder="House / Street / Village" autocomplete="street-address" />
+    <span asp-validation-for="Address" class="field-error"></span>
+</div>
+<div class="form-row">
+    <div class="field">
+        <label asp-for="City">City</label>
+        <input asp-for="City" class="input" autocomplete="address-level2" />
+        <span asp-validation-for="City" class="field-error"></span>
+    </div>
+    <div class="field">
+        <label asp-for="State">State</label>
+        <select asp-for="State" class="input">
+            <option value="">Select State</option>
+            @foreach (var s in AccountSettings.States)
+            {
+                <option value="@s" selected="@(s == Model.State)">@s</option>
+            }
+            @if (!string.IsNullOrEmpty(Model.State) && !AccountSettings.States.Contains(Model.State))
+            {
+                <option value="@Model.State" selected>@Model.State</option>
+            }
+        </select>
+        <span asp-validation-for="State" class="field-error"></span>
+    </div>
+</div>
+
+@if (Model.Role == "Farmer")
+{
+    <div class="account-section-title">Farm details</div>
+    <div class="form-row">
+        <div class="field">
+            <label asp-for="FarmLocation">Farm Location</label>
+            <input asp-for="FarmLocation" class="input" placeholder="Village, District" />
+            <span asp-validation-for="FarmLocation" class="field-error"></span>
+        </div>
+        <div class="field">
+            <label asp-for="CropsGrown">Crops Grown</label>
+            <input asp-for="CropsGrown" class="input" placeholder="Wheat, Tomato, Onion" />
+            <span asp-validation-for="CropsGrown" class="field-error"></span>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="field">
+            <label asp-for="FarmSizeAcres">Farm Size (acres)</label>
+            <input asp-for="FarmSizeAcres" class="input" type="number" step="0.1" min="0" />
+            <span asp-validation-for="FarmSizeAcres" class="field-error"></span>
+        </div>
+        <div class="field">
+            <label asp-for="ExperienceYears">Experience (years)</label>
+            <input asp-for="ExperienceYears" class="input" type="number" min="0" max="80" />
+            <span asp-validation-for="ExperienceYears" class="field-error"></span>
+        </div>
+    </div>
+}
+
+<div class="account-actions">
+    <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Changes</button>
+</div>

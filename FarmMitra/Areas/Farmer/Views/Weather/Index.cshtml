@@ -1,0 +1,129 @@
+@model WeatherPageViewModel
+@{
+    ViewData["Title"] = "Weather";
+    var r = Model.Report;
+    var today = r?.Days.FirstOrDefault();
+    var rainChart = r == null ? null : new BarChartModel
+    {
+        Bars = r.Days.Select(d => new MonthBar { Label = d.Date.DayOfWeek.ToString().Substring(0, 3), Value = (decimal)Math.Round(d.RainMm, 1) }).ToList(),
+        Color = "var(--info)"
+    };
+}
+
+<div class="dash-content-head">
+    <div>
+        <h1>Weather</h1>
+        <p>@(Model.Place != null ? "Forecast for " + Model.Place.Label : "Local forecast and farming advice")</p>
+    </div>
+    <form method="get" asp-area="Farmer" asp-controller="Weather" asp-action="Index" class="wx-search">
+        <div class="input-group">
+            <i class="fa-solid fa-location-dot input-icon"></i>
+            <input class="input" type="text" name="city" value="@Model.Query" placeholder="Search your town or city" maxlength="80" aria-label="Town or city" />
+        </div>
+        <button type="submit" class="btn btn-primary">Search</button>
+    </form>
+</div>
+
+@if (Model.Error != null)
+{
+    <div class="alert alert-warning" style="margin-bottom:20px;"><i class="fa-solid fa-triangle-exclamation"></i> @Model.Error</div>
+}
+
+@if (Model.NeedsLocation && r == null)
+{
+    <div class="dash-panel" style="text-align:center; padding:48px 24px;">
+        <div class="feature-icon" style="margin:0 auto 16px; width:64px; height:64px; font-size:1.5rem; border-radius:50%;"><i class="fa-solid fa-cloud-sun"></i></div>
+        <h2 style="font-size:1.25rem; margin-bottom:6px;">Where is your farm?</h2>
+        <p class="section-sub" style="margin:0 auto;">Search for your town or city above to see today's weather, a 7-day forecast and farming tips.</p>
+    </div>
+}
+
+@if (r != null && Model.Place != null)
+{
+    @if (Model.Alternatives.Any())
+    {
+        <div class="wx-chips">
+            <span>Not the right place?</span>
+            @foreach (var p in Model.Alternatives)
+            {
+                <a asp-area="Farmer" asp-controller="Weather" asp-action="Index" asp-route-city="@Model.Query" asp-route-lat="@p.Latitude" asp-route-lon="@p.Longitude" asp-route-name="@p.Label">@p.Label</a>
+            }
+        </div>
+    }
+
+    <div class="wx-now">
+        <div class="wx-now-main">
+            <i class="fa-solid @r.Current.Icon wx-now-icon" aria-hidden="true"></i>
+            <div>
+                <div class="wx-temp">@(Math.Round(r.Current.Temperature))°C</div>
+                <div class="wx-desc">@r.Current.Description. Feels like @(Math.Round(r.Current.FeelsLike))°C</div>
+            </div>
+        </div>
+        <div class="wx-stats">
+            <div class="wx-stat"><span>Humidity</span><strong>@(Math.Round(r.Current.Humidity))%</strong></div>
+            <div class="wx-stat"><span>Rain right now</span><strong>@r.Current.Rain.ToString("0.#") mm</strong></div>
+            <div class="wx-stat"><span>Wind</span><strong>@(Math.Round(r.Current.WindSpeed)) km/h @r.Current.WindCompass</strong></div>
+            <div class="wx-stat"><span>UV index today</span><strong>@(today != null ? today.Uv.ToString("0.#") : "-")</strong></div>
+        </div>
+    </div>
+
+    <div class="dash-panel mt-24">
+        <div class="dash-panel-head"><h2>Farming advice for the next few days</h2></div>
+        @foreach (var a in Model.Advisories)
+        {
+            <div class="advice @a.Level">
+                <i class="fa-solid @a.Icon" aria-hidden="true"></i>
+                <div><strong>@a.Title</strong><p>@a.Text</p></div>
+            </div>
+        }
+    </div>
+
+    <div class="dash-panel mt-24">
+        <div class="dash-panel-head"><h2>7-Day Forecast</h2></div>
+        <div class="fc-grid">
+            @foreach (var d in r.Days)
+            {
+                <div class="fc-day @(d.Label == "Today" ? "today" : "")">
+                    <div class="fc-name">@d.Label</div>
+                    <div class="fc-date">@d.Date.ToString("dd MMM")</div>
+                    <div class="fc-icon"><i class="fa-solid @d.Icon" aria-hidden="true"></i></div>
+                    <div class="fc-temp">@(Math.Round(d.Max))° <span>/ @(Math.Round(d.Min))°</span></div>
+                    <div class="fc-rain"><i class="fa-solid fa-droplet"></i> @(Math.Round(d.RainChance))%</div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="grid grid-2 mt-24">
+        <div class="dash-panel">
+            <div class="dash-panel-head"><h2>Expected Rainfall</h2><span style="font-size:0.8rem; color:var(--text-light);">mm per day</span></div>
+            <partial name="_BarChart" model="rainChart" />
+        </div>
+
+        <div class="dash-panel">
+            <div class="dash-panel-head"><h2>Daily Details</h2></div>
+            <div class="table-scroll">
+                <table class="data-table">
+                    <thead><tr><th>Day</th><th>Rain</th><th>Wind max</th><th>Evaporation</th></tr></thead>
+                    <tbody>
+                        @foreach (var d in r.Days)
+                        {
+                            <tr>
+                                <td>@d.Label<span class="cell-sub">@d.Description</span></td>
+                                <td>@d.RainMm.ToString("0.#") mm</td>
+                                <td>@(Math.Round(d.WindMax)) km/h</td>
+                                <td>@d.Evaporation.ToString("0.#") mm</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <p class="cell-sub" style="margin-top:20px;">
+        Weather data by <a href="https://open-meteo.com/" target="_blank" rel="noopener" style="color:var(--primary); font-weight:600;">Open-Meteo.com</a>,
+        updated @r.FetchedAtUtc.ToLocalTime().ToString("hh:mm tt"). Farming tips are general guidance from the forecast numbers,
+        so please also follow official local weather warnings.
+    </p>
+}

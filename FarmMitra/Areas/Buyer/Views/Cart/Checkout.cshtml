@@ -1,0 +1,107 @@
+@model CheckoutViewModel
+@{
+    ViewData["Title"] = "Checkout";
+    var cart = Model.Cart!;
+}
+
+<style>
+    .co-layout { display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px; align-items: start; }
+    .co-item { display: flex; align-items: center; gap: 12px; padding: 10px 0; }
+    .co-item img { width: 48px; height: 48px; border-radius: 10px; object-fit: cover; background: var(--primary-tint); }
+    .co-item .nm { flex: 1; font-size: 0.9rem; font-weight: 600; }
+    .co-item .nm small { display: block; font-weight: 400; color: var(--text-light); }
+    .sum-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 0.94rem; color: var(--text-light); }
+    .sum-row strong { color: var(--text-dark); }
+    .sum-total { border-top: 1px solid var(--border); margin-top: 8px; padding-top: 16px; font-size: 1.1rem; }
+    .sum-total strong { font-family: var(--font-display); font-size: 1.3rem; color: var(--primary-dark); }
+    .pay-option { display: flex; align-items: center; gap: 14px; border: 1.5px solid var(--primary); background: var(--primary-tint); border-radius: var(--radius-sm); padding: 16px; }
+    .pay-option i { color: var(--primary); font-size: 1.3rem; }
+    .pay-option small { display: block; color: var(--text-light); }
+    @@media (max-width: 992px) { .co-layout { grid-template-columns: 1fr; } }
+</style>
+
+<div class="dash-content-head">
+    <div>
+        <h1>Checkout</h1>
+        <p>Confirm where to deliver and place your order.</p>
+    </div>
+    <a asp-area="Buyer" asp-controller="Cart" asp-action="Index" class="btn btn-outline"><i class="fa-solid fa-arrow-left"></i> Back to cart</a>
+</div>
+
+<form method="post" asp-area="Buyer" asp-controller="Cart" asp-action="Checkout" novalidate>
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="margin-bottom:20px;"></div>
+
+    <div class="co-layout">
+        <div>
+            <div class="dash-panel">
+                <div class="dash-panel-head"><h2>Delivery Details</h2></div>
+
+                <div class="form-row">
+                    <div class="field">
+                        <label asp-for="FullName">Full Name</label>
+                        <input asp-for="FullName" class="input" autocomplete="name" />
+                        <span asp-validation-for="FullName" class="field-error"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="Phone">Mobile Number</label>
+                        <input asp-for="Phone" class="input" autocomplete="tel" />
+                        <span asp-validation-for="Phone" class="field-error"></span>
+                    </div>
+                </div>
+                <div class="field">
+                    <label asp-for="Address">Address</label>
+                    <input asp-for="Address" class="input" placeholder="House / Street / Village" autocomplete="street-address" />
+                    <span asp-validation-for="Address" class="field-error"></span>
+                </div>
+                <div class="form-row">
+                    <div class="field">
+                        <label asp-for="City">City</label>
+                        <input asp-for="City" class="input" autocomplete="address-level2" />
+                        <span asp-validation-for="City" class="field-error"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="State">State</label>
+                        <select asp-for="State" class="input">
+                            <option value="">Select State</option>
+                            @foreach (var s in new[] { "Maharashtra", "Karnataka", "Gujarat", "Punjab", "Uttar Pradesh", "Telangana", "Andhra Pradesh", "Madhya Pradesh", "Rajasthan", "Tamil Nadu" })
+                            {
+                                <option value="@s">@s</option>
+                            }
+                        </select>
+                        <span asp-validation-for="State" class="field-error"></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="dash-panel" style="margin-top:24px;">
+                <div class="dash-panel-head"><h2>Payment</h2></div>
+                <div class="pay-option">
+                    <i class="fa-solid fa-money-bill-wave"></i>
+                    <div><strong>Cash on Delivery</strong><small>Pay the farmer when your order arrives. Online payment is coming later.</small></div>
+                </div>
+            </div>
+        </div>
+
+        <aside class="dash-panel">
+            <div class="dash-panel-head"><h2>Your Order</h2></div>
+            @foreach (var l in cart.Lines)
+            {
+                <div class="co-item">
+                    <img src="@(string.IsNullOrEmpty(l.ImagePath) ? "/images/placeholder.svg" : l.ImagePath)" alt="" onerror="this.onerror=null;this.src='/images/placeholder.svg';" />
+                    <div class="nm">@l.Name<small>@l.Quantity @l.Unit x ₹@l.UnitPrice.ToString("N0")</small></div>
+                    <strong>₹@l.LineTotal.ToString("N0")</strong>
+                </div>
+            }
+
+            <div style="margin-top:12px;">
+                <div class="sum-row"><span>Subtotal</span><strong>₹@cart.Subtotal.ToString("N0")</strong></div>
+                <div class="sum-row"><span>Delivery</span><strong>@(cart.DeliveryFee == 0 ? "Free" : "₹" + cart.DeliveryFee.ToString("N0"))</strong></div>
+                <div class="sum-row sum-total"><span>Total</span><strong>₹@cart.Total.ToString("N0")</strong></div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" style="margin-top:20px;">
+                <i class="fa-solid fa-lock"></i> Place Order
+            </button>
+        </aside>
+    </div>
+</form>

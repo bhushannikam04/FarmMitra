@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Farm Mitra</title>
+    <link rel="stylesheet" href="~/css/style.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/responsive.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .validation-summary-valid { display: none; }
+        .validation-summary-errors ul { margin: 0; padding-left: 18px; list-style: disc; }
+        .field-error { color: var(--danger); font-size: 0.8rem; margin-top: 5px; display: block; }
+        .field-error:empty { display: none; }
+        .input.input-validation-error { border-color: var(--danger); }
+        .auth-form-box.wide { max-width: 560px; }
+    </style>
+    <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
+    <meta name="theme-color" content="#1B5E20" />
+    <script src="~/js/theme.js"></script>
+    <link rel="stylesheet" href="~/css/lang.css" asp-append-version="true" />
+    <script src="~/js/lang.js" defer></script>
+</head>
+<body>
+    <div style="position:fixed;top:14px;right:14px;z-index:50;display:flex;gap:8px;align-items:center;"><partial name="_LanguagePicker" /><partial name="_ThemeToggle" /></div>
+    @RenderBody()
+
+    <script src="~/js/main.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

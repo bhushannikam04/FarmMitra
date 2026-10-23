@@ -1,0 +1,22 @@
+@model IPaged
+@if (Model.TotalPages > 1)
+{
+    <form method="get">
+        <input type="hidden" name="q" value="@Model.Q" />
+        <input type="hidden" name="status" value="@Model.Status" />
+        <nav class="pagination" aria-label="Pagination" style="margin-top:22px;">
+            @if (Model.Page > 1)
+            {
+                <button type="submit" name="page" value="@(Model.Page - 1)" class="nav-arrow" aria-label="Previous page"><i class="fa-solid fa-chevron-left"></i></button>
+            }
+            @for (var i = 1; i <= Model.TotalPages; i++)
+            {
+                <button type="submit" name="page" value="@i" class="@(i == Model.Page ? "active" : "")">@i</button>
+            }
+            @if (Model.Page < Model.TotalPages)
+            {
+                <button type="submit" name="page" value="@(Model.Page + 1)" class="nav-arrow" aria-label="Next page"><i class="fa-solid fa-chevron-right"></i></button>
+            }
+        </nav>
+    </form>
+}

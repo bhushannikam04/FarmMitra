@@ -1,0 +1,201 @@
+/* ============================================================
+   FARM MITRA - THEME (light / dark)
+   Light is the default (tokens in style.css). Dark overrides the
+   same tokens when <html data-theme="dark"> is set by theme.js.
+   Load this file LAST in every layout.
+   ============================================================ */
+
+:root[data-theme="dark"] {
+    color-scheme: dark;
+
+    --primary: #2E7D32;          /* solid green (buttons) - white text stays readable */
+    --primary-light: #4CAF50;
+    --primary-dark: #0E2A12;
+    --secondary: #81C784;
+    --accent: #F9A825;
+    --accent-dark: #FFB74D;
+    --background: #0E1411;       /* page */
+    --white: #17201A;            /* "surface": cards, panels, inputs, navbar */
+    --text-dark: #E8EEE9;
+    --text-light: #A9B5AC;
+    --text-muted: #7F8C83;
+    --border: #2B372E;
+    --danger: #F87171;
+    --success: #4ADE80;
+    --warning: #FBBF24;
+    --info: #7EA6FF;
+
+    --primary-tint: #1A3320;
+    --accent-tint: #3A2F14;
+    --danger-tint: #3A1B1B;
+    --success-tint: #17301F;
+    --warning-tint: #382B12;
+    --info-tint: #1B2A47;
+
+    --shadow-sm: 0 1px 2px rgba(0,0,0,.4);
+    --shadow-md: 0 8px 24px rgba(0,0,0,.45);
+    --shadow-lg: 0 20px 48px rgba(0,0,0,.55);
+}
+
+/* ---------- text that used the brand green on a light page ---------- */
+[data-theme="dark"] .eyebrow,
+[data-theme="dark"] .btn-secondary,
+[data-theme="dark"] .btn-outline:hover,
+[data-theme="dark"] .nav-links a:hover,
+[data-theme="dark"] .nav-links a.active,
+[data-theme="dark"] .step-card .step-num,
+[data-theme="dark"] .step-card .step-icon,
+[data-theme="dark"] .farmer-loc i,
+[data-theme="dark"] .feature-icon,
+[data-theme="dark"] .floating-card i,
+[data-theme="dark"] .auth-role-toggle button,
+[data-theme="dark"] .auth-row-between a,
+[data-theme="dark"] .auth-footer-link a,
+[data-theme="dark"] .form-section-title i,
+[data-theme="dark"] .usertype-card i,
+[data-theme="dark"] .page-banner .breadcrumb a,
+[data-theme="dark"] .pagination button:hover,
+[data-theme="dark"] .dash-topbar-icon-btn:hover,
+[data-theme="dark"] .dash-panel-head a,
+[data-theme="dark"] .table-actions button:hover,
+[data-theme="dark"] .weather-metric i,
+[data-theme="dark"] .wx-chips a,
+[data-theme="dark"] .fc-day .fc-icon,
+[data-theme="dark"] .account-tabs a:hover,
+[data-theme="dark"] .account-tabs a.active,
+[data-theme="dark"] .role-pill,
+[data-theme="dark"] .settings-preview,
+[data-theme="dark"] .photo-preview,
+[data-theme="dark"] .chat-avatar,
+[data-theme="dark"] .chat-back,
+[data-theme="dark"] .hiw-num,
+[data-theme="dark"] .fl-avatar,
+[data-theme="dark"] .pd-facts i,
+[data-theme="dark"] .cell-person .avatar-initial,
+[data-theme="dark"] .pf-tips i,
+[data-theme="dark"] .table-actions .act:hover,
+[data-theme="dark"] .track-step.current .track-dot,
+[data-theme="dark"] .cart-name:hover,
+[data-theme="dark"] .pay-option i { color: #81C784; }
+
+/* ---------- text that used the very dark green ---------- */
+[data-theme="dark"] .brand,
+[data-theme="dark"] .stat-card .stat-num,
+[data-theme="dark"] .product-tag,
+[data-theme="dark"] .product-price,
+[data-theme="dark"] .farmer-tags span,
+[data-theme="dark"] .bento-tile .stat-num,
+[data-theme="dark"] .dash-nav a:hover,
+[data-theme="dark"] .chat-chip,
+[data-theme="dark"] .live-pill,
+[data-theme="dark"] .pd-price,
+[data-theme="dark"] .px-price,
+[data-theme="dark"] .sum-total strong { color: #A5D6A7; }
+
+/* ---------- text that used --white but sits on a coloured background ---------- */
+[data-theme="dark"] .btn-primary,
+[data-theme="dark"] .btn-secondary:hover,
+[data-theme="dark"] .btn-danger:hover,
+[data-theme="dark"] .brand-mark,
+[data-theme="dark"] .mobile-nav .mobile-cta,
+[data-theme="dark"] .bento-photo-caption,
+[data-theme="dark"] .bento-tile-dark .stat-num,
+[data-theme="dark"] .bento-tile-dark .stat-label,
+[data-theme="dark"] .timeline-marker,
+[data-theme="dark"] .footer-grid .brand,
+[data-theme="dark"] .footer-col h5,
+[data-theme="dark"] .footer-social a,
+[data-theme="dark"] .auth-visual,
+[data-theme="dark"] .auth-visual .brand,
+[data-theme="dark"] .auth-visual-copy h2,
+[data-theme="dark"] .auth-role-toggle button.active,
+[data-theme="dark"] .pagination button.active,
+[data-theme="dark"] .dash-nav a.active,
+[data-theme="dark"] .dash-nav a.active .nav-count,
+[data-theme="dark"] .wx-now,
+[data-theme="dark"] .unread-dot,
+[data-theme="dark"] .bubble-row.mine .bubble,
+[data-theme="dark"] .bubble-row.mine .bubble-admin button,
+[data-theme="dark"] .pd-farmer-avatar,
+[data-theme="dark"] .avatar-initial,
+[data-theme="dark"] .track-step.done .track-dot { color: #fff; }
+
+/* ---------- hard-coded light surfaces ---------- */
+[data-theme="dark"] .navbar { background: rgba(14, 20, 17, 0.88); }
+[data-theme="dark"] .floating-card { background: rgba(23, 32, 26, 0.96); color: var(--text-dark); }
+[data-theme="dark"] .alert-success { border-color: rgba(74,222,128,.25); }
+[data-theme="dark"] .alert-danger  { border-color: rgba(248,113,113,.25); }
+[data-theme="dark"] .alert-warning { border-color: rgba(251,191,36,.25); }
+[data-theme="dark"] .alert-info    { border-color: rgba(126,166,255,.25); }
+[data-theme="dark"] .tier-seedling { background: #1A3320; color: #81C784; }
+[data-theme="dark"] .tier-bronze   { background: #3A2819; color: #E8A56B; }
+[data-theme="dark"] .tier-silver   { background: #27303A; color: #B8C4D2; }
+[data-theme="dark"] .tier-gold     { background: #3A3010; color: #F5CF5A; }
+[data-theme="dark"] circle[stroke="#E5E7EB"] { stroke: #2B372E; }
+
+/* ---------- media ---------- */
+[data-theme="dark"] img:not(.avatar-img):not(.brand-logo) { filter: brightness(.9); }
+[data-theme="dark"] .hero-art svg { filter: brightness(.82) saturate(.95); }
+[data-theme="dark"] ::placeholder { color: var(--text-muted); }
+[data-theme="dark"] ::selection { background: #2E7D32; color: #fff; }
+
+/* ---------- public navbar: keep everything on one line ---------- */
+.navbar .container { max-width: 1360px; gap: 20px; }
+.brand, .brand-text { white-space: nowrap; }
+.brand { flex: 0 0 auto; }
+.nav-links { gap: clamp(14px, 1.7vw, 30px); flex: 1 1 auto; justify-content: center; min-width: 0; }
+.nav-links a { white-space: nowrap; font-size: .94rem; }
+.nav-actions { flex: 0 0 auto; gap: 10px; }
+.nav-actions > .btn:not(.btn-icon):not(.lang-btn), .nav-actions > form .btn { padding: 10px 20px; font-size: .9rem; }
+.nav-actions .lang-btn { padding: 9px 14px; font-size: .9rem; height: 42px; }
+.nav-actions .lang-btn .fa-language { font-size: 1.05rem; }
+.nav-actions .theme-toggle { width: 42px; height: 42px; }
+
+@media (max-width: 1360px) {
+    .nav-actions .lang-btn .lang-label { display: none; }   /* globe + arrow only */
+    .nav-actions .lang-btn { padding: 9px 12px; gap: 6px; }
+}
+@media (max-width: 1180px) {                                  /* not enough room for 6 links: use the menu button */
+    .nav-links { display: none; }
+    .nav-toggle { display: flex; }
+    .navbar .container { justify-content: space-between; }
+}
+
+/* ---------- product image hover: specifications panel ---------- */
+.product-media .product-specs {
+    position: absolute; inset: 0; z-index: 3; pointer-events: none;
+    display: flex; flex-direction: column; justify-content: center; gap: 10px;
+    padding: 14px 16px;
+    background: rgba(20,80,28,.9);
+    color: #fff; opacity: 0; transform: scale(1.02);
+    transition: opacity .22s var(--ease), transform .22s var(--ease);
+}
+.product-card .product-media:hover .product-specs,
+.product-card .product-media:focus-within .product-specs { opacity: 1; transform: none; }
+.product-media:hover .product-tag, .product-media:focus-within .product-tag,
+.product-media:hover .spec-hint, .product-media:focus-within .spec-hint { opacity: 0; }
+.product-specs .spec-title { font-family: var(--font-display); font-weight: 700; font-size: .95rem; color: #fff; }
+.product-specs .spec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 9px 14px; }
+.product-specs .spec-cell { display: flex; flex-direction: column; min-width: 0; line-height: 1.25; }
+.product-specs .spec-label { font-size: .68rem; color: rgba(255,255,255,.65); }
+.product-specs .spec-value { font-size: .84rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.product-media .spec-hint {
+    position: absolute; right: 10px; bottom: 10px; z-index: 2; pointer-events: none;
+    background: rgba(0,0,0,.55); color: #fff; font-size: .72rem; font-weight: 600;
+    padding: 4px 9px; border-radius: 999px; backdrop-filter: blur(4px); transition: opacity .2s var(--ease);
+}
+@media (hover: none) { .product-media .product-specs { display: none; } }   /* touch screens: tap opens the product page */
+
+/* ---------- the toggle button ---------- */
+.theme-toggle { position: relative; flex: 0 0 auto; cursor: pointer; }
+.theme-toggle .ico-sun { display: none; }
+.theme-toggle .ico-moon { display: inline-block; }
+[data-theme="dark"] .theme-toggle .ico-sun { display: inline-block; }
+[data-theme="dark"] .theme-toggle .ico-moon { display: none; }
+
+/* smooth switch (disabled for people who prefer reduced motion) */
+@media (prefers-reduced-motion: no-preference) {
+    html.theme-anim, html.theme-anim *, html.theme-anim *::before, html.theme-anim *::after {
+        transition: background-color .25s ease, color .25s ease, border-color .25s ease !important;
+    }
+}

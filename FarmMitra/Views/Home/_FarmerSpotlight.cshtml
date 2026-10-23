@@ -1,0 +1,98 @@
+@model List<FarmerSpotlight>
+
+@if (!Model.Any())
+{
+    <div class="fl-empty">
+        <i class="fa-solid fa-seedling"></i>
+        <h3>Our first farmers are joining soon</h3>
+        <p>Approved farmers will appear here with their loyalty level as soon as they start selling.</p>
+        <a href="~/Account/Register?role=Farmer" class="btn btn-primary">Join as Farmer</a>
+    </div>
+}
+else
+{
+    var top = Model[0];
+    var rest = Model.Skip(1).ToList();
+
+    <div class="fl-grid">
+        <article class="fl-top">
+            <div class="fl-top-head">
+                <span class="fl-badge @top.TierClass"><i class="fa-solid fa-award"></i> @top.Tier farmer</span>
+                <span class="fl-eyebrow">Top loyalty farmer</span>
+            </div>
+
+            <div class="fl-top-id">
+                <div class="fl-avatar fl-avatar-lg">
+                    @if (!string.IsNullOrEmpty(top.PhotoUrl)) { <img src="@top.PhotoUrl" alt="@top.Name" /> } else { <text>@top.Initial</text> }
+                </div>
+                <div>
+                    <h3>@top.Name</h3>
+                    @if (!string.IsNullOrEmpty(top.Location))
+                    {
+                        <div class="fl-loc"><i class="fa-solid fa-location-dot"></i> @top.Location</div>
+                    }
+                </div>
+            </div>
+
+            @if (top.Crops.Any())
+            {
+                <div class="fl-crops">
+                    @foreach (var crop in top.Crops) { <span>@crop</span> }
+                </div>
+            }
+
+            <div class="fl-stats">
+                <div><strong>@top.DeliveredOrders</strong><span>Delivered orders</span></div>
+                <div><strong>@top.RepeatBuyers</strong><span>Repeat buyers</span></div>
+                <div><strong>@top.Points</strong><span>Loyalty points</span></div>
+            </div>
+
+            <div class="fl-progress">
+                <div class="fl-bar"><i style="width:@(top.ProgressPct)%"></i></div>
+                <small>
+                    @if (top.Next is { } next) { <text>@(next.From - top.Points) points to @next.Name</text> }
+                    else { <text>Top tier reached</text> }
+                </small>
+            </div>
+
+            <div class="fl-foot">
+                <span><i class="fa-solid fa-box"></i> @top.ProductCount products available</span>
+                @if (top.ExperienceYears is > 0) { <span><i class="fa-solid fa-hourglass-half"></i> @top.ExperienceYears yrs experience</span> }
+            </div>
+        </article>
+
+        <div class="fl-list">
+            @foreach (var f in rest)
+            {
+                <article class="fl-card">
+                    <div class="fl-avatar">
+                        @if (!string.IsNullOrEmpty(f.PhotoUrl)) { <img src="@f.PhotoUrl" alt="@f.Name" /> } else { <text>@f.Initial</text> }
+                    </div>
+                    <div class="fl-card-body">
+                        <div class="fl-card-row">
+                            <h3>@f.Name</h3>
+                            <span class="fl-badge fl-badge-sm @f.TierClass">@f.Tier</span>
+                        </div>
+                        @if (!string.IsNullOrEmpty(f.Location))
+                        {
+                            <div class="fl-loc"><i class="fa-solid fa-location-dot"></i> @f.Location</div>
+                        }
+                        <div class="fl-mini">
+                            <span><strong>@f.Points</strong> pts</span>
+                            <span><strong>@f.DeliveredOrders</strong> delivered</span>
+                            <span><strong>@f.RepeatRate%</strong> repeat buyers</span>
+                        </div>
+                        <div class="fl-bar fl-bar-sm"><i style="width:@(f.ProgressPct)%"></i></div>
+                    </div>
+                </article>
+            }
+            @if (!rest.Any())
+            {
+                <div class="fl-card fl-card-note">
+                    <div><strong>How loyalty works</strong>
+                    <p>Farmers earn 10 points for every delivered order and 25 more when a buyer orders again. Bronze at 50, Silver at 150, Gold at 400.</p></div>
+                </div>
+            }
+        </div>
+    </div>
+}

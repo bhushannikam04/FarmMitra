@@ -1,0 +1,71 @@
+@model FarmMitra.Models.Product
+@{
+    var soldOut = Model.Quantity <= 0 || Model.Status == "OutOfStock";
+    var place = Model.Location ?? Model.Farmer?.City;
+    var img = string.IsNullOrEmpty(Model.ImagePath) ? "/images/placeholder.svg" : Model.ImagePath;
+    var isBuyer = User.IsInRole("Buyer");
+    var signedIn = User.Identity?.IsAuthenticated == true;
+    var back = Context.Request.Path + Context.Request.QueryString;
+
+    // What the hover panel shows: the farmer's own specifications first, then plain facts to fill the grid (max 6).
+    var specs = new List<(string Label, string Value)>();
+    void AddSpec(string label, string? value) { if (!string.IsNullOrWhiteSpace(value)) specs.Add((label, value.Trim())); }
+    AddSpec("Grade", Model.Grade);
+    AddSpec("Size", Model.Size);
+    AddSpec("Harvested", Model.Harvested);
+    AddSpec("Shelf life", Model.ShelfLife);
+    AddSpec("Min. order", Model.MinOrder);
+    AddSpec("Packing", Model.Packing);
+    AddSpec("Category", Model.Category);
+    AddSpec("Location", place);
+    AddSpec("Listed", Model.CreatedAt.ToString("dd MMM yyyy"));
+    specs = specs.Take(6).ToList();
+}
+<article class="product-card">
+    <div class="product-media">
+        <span class="product-tag">@(soldOut ? "Out of Stock" : "Available")</span>
+        <a asp-area="" asp-controller="Marketplace" asp-action="Details" asp-route-id="@Model.Id">
+            <img src="@img" alt="@Model.Name" loading="lazy" onerror="this.onerror=null;this.src='/images/placeholder.svg';" />
+        </a>
+        <span class="spec-hint" aria-hidden="true"><i class="fa-solid fa-circle-info"></i> Specs</span>
+        <div class="product-specs" aria-hidden="true">
+            <div class="spec-title">Specifications</div>
+            <div class="spec-grid">
+                @foreach (var (label, value) in specs)
+                {
+                    <div class="spec-cell"><span class="spec-label">@label</span><span class="spec-value">@value</span></div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="product-body">
+        <h3 class="product-name">@Model.Name</h3>
+        <div class="product-meta">
+            <span>@Model.Farmer?.FullName</span><span class="dot"></span><span>@place</span>
+        </div>
+        <div class="product-price-row">
+            <span class="product-price">₹@Model.Price.ToString("N0") <span>/ @Model.Unit</span></span>
+            <span class="product-avail">@Model.Quantity @Model.Unit</span>
+        </div>
+        <div class="product-actions">
+            @if (soldOut)
+            {
+                <button type="button" class="btn btn-secondary" disabled>Sold Out</button>
+            }
+            else if (isBuyer)
+            {
+                <form asp-area="Buyer" asp-controller="Cart" asp-action="Add" method="post" style="flex:1; display:flex;">
+                    <input type="hidden" name="productId" value="@Model.Id" />
+                    <input type="hidden" name="quantity" value="1" />
+                    <input type="hidden" name="returnUrl" value="@back" />
+                    <button type="submit" class="btn btn-secondary" style="flex:1;"><i class="fa-solid fa-cart-plus"></i><span>Add to Cart</span></button>
+                </form>
+            }
+            else if (!signedIn)
+            {
+                <a href="~/Account/Login?returnUrl=@Uri.EscapeDataString(back)" class="btn btn-secondary"><i class="fa-solid fa-cart-plus"></i><span>Add to Cart</span></a>
+            }
+            <a asp-area="" asp-controller="Marketplace" asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline">View</a>
+        </div>
+    </div>
+</article>

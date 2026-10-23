@@ -1,0 +1,235 @@
+@model ReportsViewModel
+@{
+    ViewData["Title"] = "Reports";
+    var fromStr = Model.From.ToString("yyyy-MM-dd");
+    var toStr = Model.To.ToString("yyyy-MM-dd");
+    var todayStr = DateTime.UtcNow.ToString("yyyy-MM-dd");
+    var ordersChart = new BarChartModel { Bars = Model.OrdersChart, Color = "var(--primary-light)" };
+    var valueChart = new BarChartModel { Bars = Model.ValueChart, Color = "var(--accent)", Prefix = "₹" };
+    var farmersChart = new BarChartModel { Bars = Model.FarmersChart, Color = "var(--primary)" };
+    var buyersChart = new BarChartModel { Bars = Model.BuyersChart, Color = "var(--info)" };
+}
+
+<style>
+    .rp-filter { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; }
+    .rp-filter .field { margin: 0; }
+    .rp-filter label { font-size: 0.76rem; margin-bottom: 4px; }
+    .rp-presets { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 18px; }
+    .rp-row { margin-bottom: 14px; }
+    .rp-row:last-child { margin-bottom: 0; }
+    .rp-label { display: flex; justify-content: space-between; font-size: 0.86rem; margin-bottom: 6px; }
+    .rp-label span { color: var(--text-light); }
+    .rp-exports { display: flex; flex-wrap: wrap; gap: 8px; }
+    .rp-snap { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 14px; }
+    .rp-snap div { background: var(--background); border-radius: var(--radius-sm); padding: 14px 16px; }
+    .rp-snap span { display: block; font-size: 0.76rem; color: var(--text-light); margin-bottom: 4px; }
+    .rp-snap strong { font-family: var(--font-display); font-size: 1.2rem; }
+</style>
+<style media="print">
+    .dash-sidebar, .dash-topbar, .dash-overlay, .no-print { display: none !important; }
+    .dash-body { display: block; background: #fff; }
+    .dash-content { padding: 0; }
+    .dash-panel, .dash-card { break-inside: avoid; box-shadow: none; }
+</style>
+
+<div class="dash-content-head">
+    <div>
+        <h1>Reports</h1>
+        <p>@Model.From.ToString("dd MMM yyyy") to @Model.To.ToString("dd MMM yyyy") (@Model.Days @(Model.Days == 1 ? "day" : "days")). Changes compare with the @Model.Days days before.</p>
+    </div>
+    <button type="button" class="btn btn-outline no-print" onclick="window.print()"><i class="fa-solid fa-print"></i> Print / Save as PDF</button>
+</div>
+
+<div class="dash-panel no-print" style="margin-bottom:24px;">
+    <div class="rp-presets">
+        <a asp-area="Admin" asp-controller="Reports" asp-action="Index" asp-route-range="7" class="btn btn-sm @(Model.Range == "7" ? "btn-primary" : "btn-outline")">Last 7 days</a>
+        <a asp-area="Admin" asp-controller="Reports" asp-action="Index" asp-route-range="30" class="btn btn-sm @(Model.Range == "30" || Model.Range == null ? "btn-primary" : "btn-outline")">Last 30 days</a>
+        <a asp-area="Admin" asp-controller="Reports" asp-action="Index" asp-route-range="90" class="btn btn-sm @(Model.Range == "90" ? "btn-primary" : "btn-outline")">Last 90 days</a>
+        <a asp-area="Admin" asp-controller="Reports" asp-action="Index" asp-route-range="ytd" class="btn btn-sm @(Model.Range == "ytd" ? "btn-primary" : "btn-outline")">This year</a>
+    </div>
+
+    <form method="get" asp-area="Admin" asp-controller="Reports" asp-action="Index" class="rp-filter">
+        <div class="field"><label for="from">From</label><input class="input" type="date" id="from" name="from" value="@fromStr" max="@todayStr" /></div>
+        <div class="field"><label for="to">To</label><input class="input" type="date" id="to" name="to" value="@toStr" max="@todayStr" /></div>
+        <button type="submit" class="btn btn-primary btn-sm">Apply dates</button>
+    </form>
+</div>
+
+<div class="grid grid-3">
+    <div class="dash-card">
+        <div class="dash-card-top">
+            <div class="dash-card-icon" style="background:var(--success-tint); color:var(--success);"><i class="fa-solid fa-bag-shopping"></i></div>
+            @if (Model.OrdersChange is decimal oc)
+            {
+                <span class="dash-trend @(oc >= 0 ? "up" : "down")"><i class="fa-solid @(oc >= 0 ? "fa-arrow-up" : "fa-arrow-down")"></i> @Math.Abs(oc).ToString("0.#")%</span>
+            }
+            else { <span class="cell-sub">No earlier data</span> }
+        </div>
+        <div><span class="dash-num">@Model.Orders.ToString("N0")</span><span class="dash-label">Orders placed</span></div>
+    </div>
+    <div class="dash-card">
+        <div class="dash-card-top">
+            <div class="dash-card-icon" style="background:var(--accent-tint); color:var(--accent-dark);"><i class="fa-solid fa-indian-rupee-sign"></i></div>
+            @if (Model.ValueChange is decimal vc)
+            {
+                <span class="dash-trend @(vc >= 0 ? "up" : "down")"><i class="fa-solid @(vc >= 0 ? "fa-arrow-up" : "fa-arrow-down")"></i> @Math.Abs(vc).ToString("0.#")%</span>
+            }
+            else { <span class="cell-sub">No earlier data</span> }
+        </div>
+        <div><span class="dash-num">₹@Model.OrderValue.ToString("N0")</span><span class="dash-label">Order value (excl. cancelled)</span></div>
+    </div>
+    <div class="dash-card">
+        <div class="dash-card-top"><div class="dash-card-icon" style="background:var(--primary-tint); color:var(--primary);"><i class="fa-solid fa-receipt"></i></div></div>
+        <div><span class="dash-num">₹@Model.AvgOrderValue.ToString("N0")</span><span class="dash-label">Average order value</span></div>
+    </div>
+    <div class="dash-card">
+        <div class="dash-card-top"><div class="dash-card-icon" style="background:var(--info-tint); color:var(--info);"><i class="fa-solid fa-box-open"></i></div></div>
+        <div><span class="dash-num">@Model.Delivered.ToString("N0")</span><span class="dash-label">Delivered</span></div>
+    </div>
+    <div class="dash-card">
+        <div class="dash-card-top"><div class="dash-card-icon" style="background:var(--danger-tint); color:var(--danger);"><i class="fa-solid fa-ban"></i></div></div>
+        <div><span class="dash-num">@Model.Cancelled.ToString("N0")</span><span class="dash-label">Cancelled (@Model.CancelRate.ToString("0.#")%)</span></div>
+    </div>
+    <div class="dash-card">
+        <div class="dash-card-top"><div class="dash-card-icon" style="background:var(--warning-tint); color:var(--warning);"><i class="fa-solid fa-user-plus"></i></div></div>
+        <div><span class="dash-num">@((Model.NewFarmers + Model.NewBuyers).ToString("N0"))</span><span class="dash-label">New users (@Model.NewFarmers farmers, @Model.NewBuyers buyers)</span></div>
+    </div>
+</div>
+
+<div class="grid grid-2 mt-24">
+    <div class="dash-panel">
+        <div class="dash-panel-head"><h2>Orders</h2></div>
+        <partial name="_BarChart" model="ordersChart" />
+    </div>
+    <div class="dash-panel">
+        <div class="dash-panel-head"><h2>Order Value</h2><span style="font-size:0.8rem; color:var(--text-light);">₹</span></div>
+        <partial name="_BarChart" model="valueChart" />
+    </div>
+    <div class="dash-panel">
+        <div class="dash-panel-head"><h2>Orders by Status</h2></div>
+        @foreach (var s in Model.StatusShare)
+        {
+            <div class="rp-row">
+                <div class="rp-label"><span>@s.Label</span><strong>@s.Count (@s.Percent%)</strong></div>
+                <div class="progress-track"><span style="width:@(s.Percent)%"></span></div>
+            </div>
+        }
+        @if (!Model.StatusShare.Any()) { <p class="cell-sub">No orders in this period.</p> }
+    </div>
+    <div class="dash-panel">
+        <div class="dash-panel-head"><h2>Sales by Category</h2><span style="font-size:0.8rem; color:var(--text-light);">product value</span></div>
+        @foreach (var s in Model.CategoryShare)
+        {
+            <div class="rp-row">
+                <div class="rp-label"><span>@s.Label</span><strong>₹@s.Amount.ToString("N0") (@s.Percent%)</strong></div>
+                <div class="progress-track"><span style="width:@(s.Percent)%"></span></div>
+            </div>
+        }
+        @if (!Model.CategoryShare.Any()) { <p class="cell-sub">No sales in this period.</p> }
+    </div>
+</div>
+
+<div class="dash-panel mt-24">
+    <div class="dash-panel-head"><h2>Top Products</h2><span style="font-size:0.8rem; color:var(--text-light);">by sales value</span></div>
+    <div class="table-scroll">
+        <table class="data-table">
+            <thead><tr><th>Product</th><th>Farmer</th><th>Orders</th><th>Quantity sold</th><th>Sales</th></tr></thead>
+            <tbody>
+                @foreach (var p in Model.TopProducts)
+                {
+                    <tr><td>@p.Name</td><td>@p.Sub</td><td>@p.Orders</td><td>@p.Quantity.ToString("0.##") @p.Unit</td><td>₹@p.Amount.ToString("N0")</td></tr>
+                }
+                @if (!Model.TopProducts.Any()) { <tr class="empty-row"><td colspan="5">No sales in this period.</td></tr> }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="grid grid-2 mt-24">
+    <div class="dash-panel">
+        <div class="dash-panel-head"><h2>Top Farmers</h2></div>
+        <div class="table-scroll">
+            <table class="data-table">
+                <thead><tr><th>Farmer</th><th>Orders</th><th>Sales</th></tr></thead>
+                <tbody>
+                    @foreach (var f in Model.TopFarmers)
+                    {
+                        <tr><td>@f.Name</td><td>@f.Orders</td><td>₹@f.Amount.ToString("N0")</td></tr>
+                    }
+                    @if (!Model.TopFarmers.Any()) { <tr class="empty-row"><td colspan="3">No sales in this period.</td></tr> }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="dash-panel">
+        <div class="dash-panel-head"><h2>Top Buyers</h2></div>
+        <div class="table-scroll">
+            <table class="data-table">
+                <thead><tr><th>Buyer</th><th>Orders</th><th>Spent</th></tr></thead>
+                <tbody>
+                    @foreach (var b in Model.TopBuyers)
+                    {
+                        <tr><td>@b.Name</td><td>@b.Orders</td><td>₹@b.Amount.ToString("N0")</td></tr>
+                    }
+                    @if (!Model.TopBuyers.Any()) { <tr class="empty-row"><td colspan="3">No sales in this period.</td></tr> }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<div class="grid grid-2 mt-24">
+    <div class="dash-panel">
+        <div class="dash-panel-head"><h2>New Farmers</h2></div>
+        <partial name="_BarChart" model="farmersChart" />
+    </div>
+    <div class="dash-panel">
+        <div class="dash-panel-head"><h2>New Buyers</h2></div>
+        <partial name="_BarChart" model="buyersChart" />
+    </div>
+    <div class="dash-panel">
+        <div class="dash-panel-head"><h2>Complaints by Status</h2><span style="font-size:0.8rem; color:var(--text-light);">@Model.Complaints in total</span></div>
+        @foreach (var s in Model.ComplaintStatus)
+        {
+            <div class="rp-row">
+                <div class="rp-label"><span>@s.Label</span><strong>@s.Count (@s.Percent%)</strong></div>
+                <div class="progress-track"><span style="width:@(s.Percent)%"></span></div>
+            </div>
+        }
+        @if (!Model.ComplaintStatus.Any()) { <p class="cell-sub">No complaints in this period.</p> }
+    </div>
+    <div class="dash-panel">
+        <div class="dash-panel-head"><h2>Complaints by Type</h2></div>
+        @foreach (var s in Model.ComplaintType)
+        {
+            <div class="rp-row">
+                <div class="rp-label"><span>@s.Label</span><strong>@s.Count (@s.Percent%)</strong></div>
+                <div class="progress-track"><span style="width:@(s.Percent)%"></span></div>
+            </div>
+        }
+        @if (!Model.ComplaintType.Any()) { <p class="cell-sub">No complaints in this period.</p> }
+    </div>
+</div>
+
+<div class="dash-panel mt-24">
+    <div class="dash-panel-head"><h2>Platform Snapshot</h2><span style="font-size:0.8rem; color:var(--text-light);">right now, not tied to the dates</span></div>
+    <div class="rp-snap">
+        <div><span>Farmers</span><strong>@Model.TotalFarmers.ToString("N0")</strong></div>
+        <div><span>Buyers</span><strong>@Model.TotalBuyers.ToString("N0")</strong></div>
+        <div><span>Products</span><strong>@Model.TotalProducts.ToString("N0")</strong></div>
+        <div><span>Out of stock</span><strong>@Model.OutOfStock.ToString("N0")</strong></div>
+        <div><span>Awaiting approval</span><strong>@Model.PendingApprovals.ToString("N0")</strong></div>
+        <div><span>Listed in this period</span><strong>@Model.NewProducts.ToString("N0")</strong></div>
+    </div>
+</div>
+
+<div class="dash-panel mt-24 no-print">
+    <div class="dash-panel-head"><h2>Download Data (CSV for Excel)</h2></div>
+    <div class="rp-exports">
+        <a asp-area="Admin" asp-controller="Reports" asp-action="ExportOrders" asp-route-from="@fromStr" asp-route-to="@toStr" class="btn btn-outline btn-sm"><i class="fa-solid fa-file-csv"></i> Orders (selected dates)</a>
+        <a asp-area="Admin" asp-controller="Reports" asp-action="ExportComplaints" asp-route-from="@fromStr" asp-route-to="@toStr" class="btn btn-outline btn-sm"><i class="fa-solid fa-file-csv"></i> Complaints (selected dates)</a>
+        <a asp-area="Admin" asp-controller="Reports" asp-action="ExportFarmers" class="btn btn-outline btn-sm"><i class="fa-solid fa-file-csv"></i> Farmers (all)</a>
+        <a asp-area="Admin" asp-controller="Reports" asp-action="ExportProducts" class="btn btn-outline btn-sm"><i class="fa-solid fa-file-csv"></i> Products (all)</a>
+    </div>
+    <p class="cell-sub" style="margin-top:12px;">Dates are in UTC. Order value is the order total including delivery, while category and top-list sales use product value only.</p>
+</div>

@@ -1,0 +1,103 @@
+@model ComplaintsPageViewModel
+@{
+    ViewData["Title"] = "Complaints";
+    ViewData["Placeholder"] = "Search subject or type...";
+    ViewData["Statuses"] = new[] { "Pending", "Under Review", "Resolved", "Rejected" };
+    var list = Model.List;
+}
+
+<style>
+    .cmp-layout { display: grid; grid-template-columns: 1fr 1.5fr; gap: 24px; align-items: start; }
+    @@media (max-width: 1200px) { .cmp-layout { grid-template-columns: 1fr; } }
+</style>
+
+<div class="dash-content-head">
+    <div>
+        <h1>Complaints</h1>
+        <p>Something wrong with an order? Tell us and we'll look into it.</p>
+    </div>
+</div>
+
+<div class="cmp-layout">
+    <div class="dash-panel">
+        <div class="dash-panel-head"><h2>Submit a Complaint</h2></div>
+
+        <form method="post" enctype="multipart/form-data" asp-area="Buyer" asp-controller="Complaints" asp-action="Create" novalidate>
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="margin-bottom:18px;"></div>
+
+            <div class="field">
+                <label asp-for="Form.Type">Complaint Type</label>
+                <select asp-for="Form.Type" class="input">
+                    <option value="">Select type</option>
+                    @foreach (var t in ComplaintTypes.All)
+                    {
+                        <option value="@t">@t</option>
+                    }
+                </select>
+                <span asp-validation-for="Form.Type" class="field-error"></span>
+            </div>
+
+            <div class="field">
+                <label asp-for="Form.OrderId">Order (optional)</label>
+                <select asp-for="Form.OrderId" class="input">
+                    <option value="">Not about a specific order</option>
+                    @foreach (var o in Model.Orders)
+                    {
+                        <option value="@o.Id">@o.Label</option>
+                    }
+                </select>
+                <span asp-validation-for="Form.OrderId" class="field-error"></span>
+            </div>
+
+            <div class="field">
+                <label asp-for="Form.Subject">Subject</label>
+                <input asp-for="Form.Subject" class="input" placeholder="e.g. Onions arrived damaged" maxlength="150" />
+                <span asp-validation-for="Form.Subject" class="field-error"></span>
+            </div>
+
+            <div class="field">
+                <label asp-for="Form.Description">Description</label>
+                <textarea asp-for="Form.Description" class="input" rows="5" maxlength="2000" placeholder="What happened? Include quantities and dates if you can."></textarea>
+                <span asp-validation-for="Form.Description" class="field-error"></span>
+            </div>
+
+            <div class="field">
+                <label asp-for="Form.Attachment">Photo (optional)</label>
+                <input asp-for="Form.Attachment" type="file" class="input" accept="image/png,image/jpeg,image/webp" />
+                <div class="hint">JPG, PNG or WebP, up to 3 MB.</div>
+                <span asp-validation-for="Form.Attachment" class="field-error"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block"><i class="fa-solid fa-paper-plane"></i> Submit Complaint</button>
+        </form>
+    </div>
+
+    <div class="dash-panel">
+        <div class="dash-panel-head"><h2>My Complaints</h2></div>
+        <partial name="_ListToolbar" model="(IPaged)list" />
+
+        <div class="table-scroll">
+            <table class="data-table">
+                <thead><tr><th>ID</th><th>Subject</th><th>Order</th><th>Date</th><th>Status</th></tr></thead>
+                <tbody>
+                    @foreach (var c in list.Items)
+                    {
+                        <tr>
+                            <td>#CMP-@c.Id</td>
+                            <td title="@c.Description">@c.Subject<span class="cell-sub">@c.Type</span></td>
+                            <td>@(c.OrderId.HasValue ? "#FM-" + c.OrderId : "-")</td>
+                            <td>@c.CreatedAt.ToString("dd MMM yyyy")</td>
+                            <td><span class="badge @BadgeHelper.Css(c.Status)">@c.Status</span></td>
+                        </tr>
+                    }
+                    @if (!list.Items.Any())
+                    {
+                        <tr class="empty-row"><td colspan="5">No complaints. We hope it stays that way.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <partial name="_Pager" model="(IPaged)list" />
+    </div>
+</div>

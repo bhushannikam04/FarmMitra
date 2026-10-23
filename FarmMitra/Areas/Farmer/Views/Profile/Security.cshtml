@@ -1,0 +1,21 @@
+@model ChangePasswordViewModel
+@{ ViewData["Title"] = "Password & Security"; }
+
+<partial name="_AccountTabs" />
+
+<div class="account-grid">
+    <div class="dash-panel">
+        <div class="dash-panel-head"><h2>Change Password</h2></div>
+        <form asp-action="ChangePassword" method="post">
+            <partial name="_PasswordForm" model="Model" />
+        </form>
+    </div>
+    <aside class="dash-panel">
+        <div class="dash-panel-head"><h2>Keep your account safe</h2></div>
+        <ul style="list-style:disc; padding-left:18px; color:var(--text-light); font-size:0.9rem; display:grid; gap:8px;">
+            <li>Never share your password with anyone.</li>
+            <li>Use a password you don't use on other sites.</li>
+            <li>Farm Mitra staff will never ask for your password.</li>
+        </ul>
+    </aside>
+</div>

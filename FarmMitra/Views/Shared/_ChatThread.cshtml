@@ -1,0 +1,162 @@
+@using FarmMitra.ViewModels
+@model ThreadViewModel
+@{
+    var returnUrl = Context.Request.Path.ToString();
+    var area = Model.Area;
+}
+
+<div class="dash-content-head">
+    <div>
+        <a asp-area="@area" asp-controller="Messages" asp-action="Index" class="chat-back"><i class="fa-solid fa-arrow-left"></i> All conversations</a>
+        @if (Model.IsAdmin)
+        {
+            <h1>@Model.BuyerName <span class="chat-arrow"><i class="fa-solid fa-arrows-left-right"></i></span> @Model.FarmerName</h1>
+            <p>Buyer and farmer. You are viewing this conversation as an administrator.</p>
+        }
+        else
+        {
+            <h1>@Model.OtherName</h1>
+        }
+        <div style="margin-top:8px; display:flex; gap:8px; flex-wrap:wrap;">
+            @if (Model.ProductId.HasValue && !string.IsNullOrEmpty(Model.ProductName))
+            {
+                <a asp-area="" asp-controller="Marketplace" asp-action="Details" asp-route-id="@Model.ProductId" class="chat-chip" target="_blank"><i class="fa-solid fa-box"></i> About: @Model.ProductName</a>
+            }
+            @if (Model.IsReported)
+            {
+                <span class="badge badge-danger">Reported</span>
+            }
+            @if (Model.IsClosed)
+            {
+                <span class="badge badge-neutral">Closed</span>
+            }
+        </div>
+    </div>
+
+    @if (Model.IsAdmin)
+    {
+        <div class="flex gap-8" style="flex-wrap:wrap;">
+            @if (Model.IsReported)
+            {
+                <form asp-area="Admin" asp-controller="Messages" asp-action="DismissReport" asp-route-id="@Model.Id" method="post">
+                    <input type="hidden" name="returnUrl" value="@returnUrl" />
+                    <button type="submit" class="btn btn-secondary btn-sm"><i class="fa-solid fa-flag"></i> Dismiss report</button>
+                </form>
+            }
+            <form asp-area="Admin" asp-controller="Messages" asp-action="SetClosed" asp-route-id="@Model.Id" method="post"
+                  data-confirm="@(Model.IsClosed ? "Both people will be able to send messages again." : "Nobody will be able to send new messages in this conversation.")"
+                  data-confirm-title="@(Model.IsClosed ? "Reopen conversation?" : "Close conversation?")"
+                  data-confirm-button="@(Model.IsClosed ? "Reopen" : "Close")" data-danger="@(Model.IsClosed ? "false" : "true")">
+                <input type="hidden" name="closed" value="@(Model.IsClosed ? "false" : "true")" />
+                <input type="hidden" name="returnUrl" value="@returnUrl" />
+                <button type="submit" class="btn @(Model.IsClosed ? "btn-primary" : "btn-danger") btn-sm">
+                    <i class="fa-solid @(Model.IsClosed ? "fa-lock-open" : "fa-lock")"></i> @(Model.IsClosed ? "Reopen" : "Close conversation")
+                </button>
+            </form>
+        </div>
+    }
+</div>
+
+@if (Model.IsAdmin && Model.IsReported)
+{
+    <div class="alert alert-danger" style="margin-bottom:18px;"><i class="fa-solid fa-flag"></i> <span><strong>Reported:</strong> @Model.ReportReason</span></div>
+}
+else if (!Model.IsAdmin)
+{
+    <div class="chat-notice">
+        <i class="fa-solid fa-shield-halved"></i>
+        <span>Conversations can be reviewed by administrators to keep Farm Mitra safe. Don't share passwords or payment details.</span>
+    </div>
+}
+
+<div class="chat-card">
+    <div class="chat-body" id="chat-body">
+        @if (!Model.Messages.Any())
+        {
+            <div class="chat-empty" style="padding:48px 16px;">
+                <p>No messages yet. @(Model.IsAdmin ? "" : "Say hello.")</p>
+            </div>
+        }
+
+        @foreach (var m in Model.Messages)
+        {
+            var mine = Model.IsAdmin ? m.SenderId == Model.FarmerId : m.SenderId == Model.ViewerId;
+            <div class="bubble-row @(mine ? "mine" : "")">
+                <div class="bubble @(m.IsHidden ? "removed" : "")">
+                    @if (m.IsHidden && !Model.IsAdmin)
+                    {
+                        <em>This message was removed by an administrator.</em>
+                    }
+                    else
+                    {
+                        <span class="bubble-text">@m.Body</span>
+                    }
+                    <div class="bubble-meta">
+                        @(Model.IsAdmin ? m.SenderName + " - " : "")@m.SentAt.ToLocalTime().ToString("dd MMM, hh:mm tt")
+                        @if (m.IsHidden && Model.IsAdmin)
+                        {
+                            <span class="badge badge-danger" style="margin-left:6px;">Hidden</span>
+                        }
+                    </div>
+                    @if (Model.IsAdmin)
+                    {
+                        <form asp-area="Admin" asp-controller="Messages" asp-action="ToggleHide" asp-route-id="@m.Id" method="post" class="bubble-admin"
+                              data-confirm="@(m.IsHidden ? "The message will be visible to both people again." : "Both people will see 'removed by an administrator' instead of this message.")"
+                              data-confirm-title="@(m.IsHidden ? "Restore message?" : "Hide message?")"
+                              data-confirm-button="@(m.IsHidden ? "Restore" : "Hide")" data-danger="@(m.IsHidden ? "false" : "true")">
+                            <input type="hidden" name="returnUrl" value="@returnUrl" />
+                            <button type="submit">@(m.IsHidden ? "Restore" : "Hide message")</button>
+                        </form>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+
+    @if (!Model.IsAdmin)
+    {
+        @if (Model.IsClosed)
+        {
+            <div class="chat-closed"><i class="fa-solid fa-lock"></i> This conversation was closed by an administrator.</div>
+        }
+        else
+        {
+            <form asp-area="@area" asp-controller="Messages" asp-action="Send" asp-route-id="@Model.Id" method="post" class="chat-form">
+                <textarea name="body" rows="2" maxlength="2000" required placeholder="Write a message... (Ctrl+Enter to send)" aria-label="Message"></textarea>
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Send</button>
+            </form>
+        }
+    }
+</div>
+
+@if (!Model.IsAdmin)
+{
+    <div style="margin-top:18px;">
+        @if (Model.IsReported)
+        {
+            <p class="cell-sub"><i class="fa-solid fa-flag"></i> This conversation has been reported. An administrator will review it.</p>
+        }
+        else
+        {
+            <details class="report-box">
+                <summary>Report this conversation</summary>
+                <form asp-area="@area" asp-controller="Messages" asp-action="Report" asp-route-id="@Model.Id" method="post">
+                    <textarea name="reason" rows="2" maxlength="300" placeholder="What's wrong? (optional)"></textarea>
+                    <button type="submit" class="btn btn-danger btn-sm">Send report</button>
+                </form>
+            </details>
+        }
+    </div>
+}
+
+<script>
+    (function () {
+        const body = document.getElementById('chat-body');
+        if (body) body.scrollTop = body.scrollHeight;
+
+        const ta = document.querySelector('.chat-form textarea');
+        if (ta) ta.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); ta.form.submit(); }
+        });
+    })();
+</script>

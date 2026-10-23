@@ -1,0 +1,48 @@
+@model PagedResult<UserRow>
+@{
+    ViewData["Title"] = "Buyers";
+    ViewData["Placeholder"] = "Search name, email, city or mobile...";
+}
+
+<div class="dash-content-head">
+    <div>
+        <h1>Buyers</h1>
+        <p>Everyone who has registered to buy on Farm Mitra.</p>
+    </div>
+</div>
+
+<div class="dash-panel">
+    <partial name="_ListToolbar" model="(IPaged)Model" />
+
+    <div class="table-scroll">
+        <table class="data-table">
+            <thead>
+                <tr><th>Buyer</th><th>Mobile</th><th>Location</th><th>Orders</th><th>Registered</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var b in Model.Items)
+                {
+                    <tr>
+                        <td>
+                            <div class="cell-person">
+                                @if (!string.IsNullOrEmpty(b.ProfileImagePath)) { <img class="avatar-img" src="@b.ProfileImagePath" alt="" /> }
+                                else { <div class="avatar-initial">@b.FullName.Substring(0, 1).ToUpper()</div> }
+                                <div>@b.FullName<small>@b.Email</small></div>
+                            </div>
+                        </td>
+                        <td>@b.Phone</td>
+                        <td>@b.City@(string.IsNullOrEmpty(b.State) ? "" : ", " + b.State)</td>
+                        <td>@b.OrderCount</td>
+                        <td>@b.CreatedAt.ToString("dd MMM yyyy")</td>
+                    </tr>
+                }
+                @if (!Model.Items.Any())
+                {
+                    <tr class="empty-row"><td colspan="5">No buyers found.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <partial name="_Pager" model="(IPaged)Model" />
+</div>

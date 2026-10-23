@@ -1,0 +1,49 @@
+@model PagedResult<AdminConversationRow>
+@{
+    ViewData["Title"] = "Messages";
+    ViewData["Placeholder"] = "Search names, product or message text...";
+    ViewData["Statuses"] = new[] { "Reported", "Closed", "Active" };
+}
+
+<div class="dash-content-head">
+    <div>
+        <h1>Messages</h1>
+        <p>Watch every buyer and farmer conversation. Reported conversations are listed first. Search also looks inside messages.</p>
+    </div>
+</div>
+
+<div class="dash-panel">
+    <partial name="_ListToolbar" model="(IPaged)Model" />
+
+    <div class="table-scroll">
+        <table class="data-table">
+            <thead>
+                <tr><th>Buyer</th><th>Farmer</th><th>About</th><th>Messages</th><th>Last activity</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model.Items)
+                {
+                    <tr>
+                        <td>@c.BuyerName</td>
+                        <td>@c.FarmerName</td>
+                        <td>@(c.ProductName ?? "-")</td>
+                        <td>@c.MessageCount</td>
+                        <td>@c.LastMessageAt.ToLocalTime().ToString("dd MMM yyyy, hh:mm tt")</td>
+                        <td>
+                            @if (c.IsReported) { <span class="badge badge-danger" title="@c.ReportReason">Reported</span> }
+                            @if (c.IsClosed) { <span class="badge badge-neutral">Closed</span> }
+                            @if (!c.IsReported && !c.IsClosed) { <span class="badge badge-success">Active</span> }
+                        </td>
+                        <td><a asp-area="Admin" asp-controller="Messages" asp-action="Thread" asp-route-id="@c.Id" class="btn btn-outline btn-sm">Open</a></td>
+                    </tr>
+                }
+                @if (!Model.Items.Any())
+                {
+                    <tr class="empty-row"><td colspan="7">No conversations found.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <partial name="_Pager" model="(IPaged)Model" />
+</div>

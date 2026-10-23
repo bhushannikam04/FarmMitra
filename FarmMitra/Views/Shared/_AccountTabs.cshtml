@@ -1,0 +1,9 @@
+@{
+    var area = ViewContext.RouteData.Values["area"]?.ToString();
+    var action = ViewContext.RouteData.Values["action"]?.ToString();
+    var onSecurity = action is "Security" or "ChangePassword";
+}
+<nav class="account-tabs">
+    <a asp-area="@area" asp-controller="Profile" asp-action="Index" class="@(onSecurity ? "" : "active")"><i class="fa-solid fa-user"></i> Profile</a>
+    <a asp-area="@area" asp-controller="Profile" asp-action="Security" class="@(onSecurity ? "active" : "")"><i class="fa-solid fa-lock"></i> Password &amp; Security</a>
+</nav>

@@ -1,0 +1,113 @@
+@model FarmMitra.ViewModels.MarketplaceViewModel
+@{
+    ViewData["Title"] = "Marketplace";
+}
+
+<form method="get" asp-controller="Marketplace" asp-action="Index">
+
+<section class="page-banner">
+    <div class="container">
+        <div class="breadcrumb"><a href="~/">Home</a> / Marketplace</div>
+        <h1>Marketplace</h1>
+        <p class="section-sub" style="margin-top:8px;">Browse fresh produce listed directly by verified farmers.</p>
+
+        <div class="marketplace-search">
+            <div class="input-group">
+                <i class="fa-solid fa-magnifying-glass input-icon"></i>
+                <input class="input" type="text" name="q" value="@Model.Q" placeholder="Search for onion, grapes, or a farmer..." />
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="container marketplace-layout">
+
+        <aside class="filter-panel">
+            <h3>Filters</h3>
+
+            <div class="filter-group">
+                <h4>Category</h4>
+                <label class="filter-option">
+                    <input type="radio" name="category" value="" checked="@(string.IsNullOrEmpty(Model.Category))" /> All
+                </label>
+                @foreach (var c in Model.Categories)
+                {
+                    <label class="filter-option">
+                        <input type="radio" name="category" value="@c" checked="@(Model.Category == c)" /> @c
+                    </label>
+                }
+            </div>
+
+            <div class="filter-group">
+                <h4>Price Range</h4>
+                <div class="filter-price-range">
+                    <input class="input" type="number" name="minPrice" value="@Model.MinPrice" placeholder="Min" min="0" />
+                    <span>-</span>
+                    <input class="input" type="number" name="maxPrice" value="@Model.MaxPrice" placeholder="Max" min="0" />
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <h4>Location</h4>
+                <select class="input" name="location">
+                    <option value="">All locations</option>
+                    @foreach (var l in Model.Locations)
+                    {
+                        <option value="@l" selected="@(Model.Location == l)">@l</option>
+                    }
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" style="margin-bottom:10px;">Apply Filters</button>
+            <a asp-action="Index" class="btn btn-outline btn-block"><i class="fa-solid fa-rotate-left"></i> Reset</a>
+        </aside>
+
+        <div>
+            <div class="marketplace-toolbar">
+                <span class="result-count">Showing @Model.Products.Count of @Model.TotalCount products</span>
+                <select class="input sort-select" name="sort" onchange="this.form.submit()">
+                    <option value="" selected="@(string.IsNullOrEmpty(Model.Sort))">Sort by: Newest</option>
+                    <option value="price_asc" selected="@(Model.Sort == "price_asc")">Price: Low to High</option>
+                    <option value="price_desc" selected="@(Model.Sort == "price_desc")">Price: High to Low</option>
+                    <option value="name" selected="@(Model.Sort == "name")">Name: A to Z</option>
+                </select>
+            </div>
+
+            @if (Model.Products.Any())
+            {
+                <div class="grid grid-3">
+                    @foreach (var p in Model.Products)
+                    {
+                        <partial name="_ProductCard" model="p" />
+                    }
+                </div>
+
+                @if (Model.TotalPages > 1)
+                {
+                    <nav class="pagination" aria-label="Pagination">
+                        @if (Model.Page > 1)
+                        {
+                            <button type="submit" name="page" value="@(Model.Page - 1)" class="nav-arrow" aria-label="Previous page"><i class="fa-solid fa-chevron-left"></i></button>
+                        }
+                        @for (var i = 1; i <= Model.TotalPages; i++)
+                        {
+                            <button type="submit" name="page" value="@i" class="@(i == Model.Page ? "active" : "")">@i</button>
+                        }
+                        @if (Model.Page < Model.TotalPages)
+                        {
+                            <button type="submit" name="page" value="@(Model.Page + 1)" class="nav-arrow" aria-label="Next page"><i class="fa-solid fa-chevron-right"></i></button>
+                        }
+                    </nav>
+                }
+            }
+            else
+            {
+                <div class="alert alert-info"><i class="fa-solid fa-circle-info"></i> No products match your filters. Try resetting them.</div>
+            }
+        </div>
+    </div>
+</section>
+
+</form>

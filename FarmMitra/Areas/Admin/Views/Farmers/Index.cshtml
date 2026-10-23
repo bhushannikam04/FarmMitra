@@ -1,0 +1,76 @@
+@model PagedResult<UserRow>
+@{
+    ViewData["Title"] = "Farmers";
+    ViewData["Placeholder"] = "Search name, email, city or mobile...";
+    ViewData["Statuses"] = new[] { "Pending", "Approved", "Rejected" };
+    var returnUrl = Context.Request.Path + Context.Request.QueryString;
+}
+
+<div class="dash-content-head">
+    <div>
+        <h1>Farmers</h1>
+        <p>Review registrations and manage farmer accounts.</p>
+    </div>
+</div>
+
+<div class="dash-panel">
+    <partial name="_ListToolbar" model="(IPaged)Model" />
+
+    <div class="table-scroll">
+        <table class="data-table">
+            <thead>
+                <tr><th>Farmer</th><th>Mobile</th><th>Location</th><th>Farm</th><th>Registered</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var f in Model.Items)
+                {
+                    <tr>
+                        <td>
+                            <div class="cell-person">
+                                @if (!string.IsNullOrEmpty(f.ProfileImagePath)) { <img class="avatar-img" src="@f.ProfileImagePath" alt="" /> }
+                                else { <div class="avatar-initial">@f.FullName.Substring(0, 1).ToUpper()</div> }
+                                <div>@f.FullName<small>@f.Email</small></div>
+                            </div>
+                        </td>
+                        <td>@f.Phone</td>
+                        <td>@f.City@(string.IsNullOrEmpty(f.State) ? "" : ", " + f.State)<span class="cell-sub">@f.FarmLocation</span></td>
+                        <td>
+                            @(f.FarmSizeAcres.HasValue ? f.FarmSizeAcres + " acres" : "-")
+                            <span class="cell-sub">@f.CropsGrown</span>
+                        </td>
+                        <td>@f.CreatedAt.ToString("dd MMM yyyy")</td>
+                        <td><span class="badge @BadgeHelper.Css(f.ApprovalStatus)">@f.ApprovalStatus</span></td>
+                        <td>
+                            <div class="flex gap-8">
+                                @if (f.ApprovalStatus != "Approved")
+                                {
+                                    <form asp-area="Admin" asp-controller="Farmers" asp-action="Approve" asp-route-id="@f.Id" method="post"
+                                          data-confirm="@f.FullName will be able to log in and list products." data-confirm-title="Approve this farmer?" data-confirm-button="Approve">
+                                        <input type="hidden" name="returnUrl" value="@returnUrl" />
+                                        <button type="submit" class="btn btn-secondary btn-sm">Approve</button>
+                                    </form>
+                                }
+                                @if (f.ApprovalStatus != "Rejected")
+                                {
+                                    <form asp-area="Admin" asp-controller="Farmers" asp-action="Reject" asp-route-id="@f.Id" method="post"
+                                          data-confirm="@(f.ApprovalStatus == "Approved" ? f.FullName + " will lose access until approved again." : f.FullName + " will not be able to log in.")"
+                                          data-confirm-title="@(f.ApprovalStatus == "Approved" ? "Revoke access?" : "Reject this farmer?")"
+                                          data-confirm-button="@(f.ApprovalStatus == "Approved" ? "Revoke" : "Reject")" data-danger="true">
+                                        <input type="hidden" name="returnUrl" value="@returnUrl" />
+                                        <button type="submit" class="btn btn-danger btn-sm">@(f.ApprovalStatus == "Approved" ? "Revoke" : "Reject")</button>
+                                    </form>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Items.Any())
+                {
+                    <tr class="empty-row"><td colspan="7">No farmers found.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <partial name="_Pager" model="(IPaged)Model" />
+</div>

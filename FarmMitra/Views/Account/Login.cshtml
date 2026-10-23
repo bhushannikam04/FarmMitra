@@ -1,0 +1,93 @@
+@model FarmMitra.ViewModels.LoginViewModel
+@{
+    Layout = "_AuthLayout";
+    ViewData["Title"] = "Login";
+}
+
+<div class="auth-page">
+
+    <div class="auth-visual">
+        <img src="https://images.unsplash.com/photo-1500937386664-56d1dfef3854?w=900&q=80&auto=format&fit=crop" alt="" />
+        <a href="~/" class="brand">
+            <span class="brand-mark">FM</span>
+            <span class="brand-text">Farm Mitra</span>
+        </a>
+
+        <div class="auth-visual-copy">
+            <h2>Welcome back to Farm Mitra</h2>
+            <p>Manage your products, track orders and stay connected with the people you grow for, or buy from.</p>
+        </div>
+
+        <div class="auth-visual-stats">
+            <div><strong>500+</strong><span>Farmers</span></div>
+            <div><strong>10K+</strong><span>Customers</span></div>
+            <div><strong>1,000+</strong><span>Products</span></div>
+        </div>
+    </div>
+
+    <div class="auth-form-side">
+        <div class="auth-form-box">
+            <a href="~/" class="brand">
+                <span class="brand-mark">FM</span>
+                <span class="brand-text">Farm Mitra</span>
+            </a>
+
+            <h1>Welcome Back</h1>
+            <p class="auth-sub">Log in to continue. We'll take you to the right dashboard automatically.</p>
+
+            <form asp-controller="Account" asp-action="Login" method="post" novalidate>
+                <input type="hidden" asp-for="ReturnUrl" />
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="margin-bottom:20px;"></div>
+
+                <div class="field">
+                    <label asp-for="Email">Email / Username</label>
+                    <div class="input-group">
+                        <i class="fa-solid fa-envelope input-icon"></i>
+                        <input asp-for="Email" class="input" placeholder="you&#64;example.com" autocomplete="username" />
+                    </div>
+                    <span asp-validation-for="Email" class="field-error"></span>
+                </div>
+
+                <div class="field">
+                    <label asp-for="Password">Password</label>
+                    <div class="input-group">
+                        <i class="fa-solid fa-lock input-icon"></i>
+                        <input asp-for="Password" class="input" placeholder="Enter your password" autocomplete="current-password" />
+                        <i class="fa-regular fa-eye input-toggle" id="toggle-password" role="button" aria-label="Show password" tabindex="0"></i>
+                    </div>
+                    <span asp-validation-for="Password" class="field-error"></span>
+                </div>
+
+                <div class="auth-row-between">
+                    <label class="checkbox-row">
+                        <input asp-for="RememberMe" /> Remember me
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">
+                    <i class="fa-solid fa-right-to-bracket"></i> Login
+                </button>
+            </form>
+
+            <p class="auth-footer-link">
+                Don't have an account? <a asp-controller="Account" asp-action="Register">Create Account</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const toggle = document.getElementById('toggle-password');
+        const pw = document.getElementById('Password');
+        const flip = () => {
+            const show = pw.type === 'password';
+            pw.type = show ? 'text' : 'password';
+            toggle.classList.toggle('fa-eye');
+            toggle.classList.toggle('fa-eye-slash');
+        };
+        toggle.addEventListener('click', flip);
+        toggle.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); flip(); } });
+    </script>
+}

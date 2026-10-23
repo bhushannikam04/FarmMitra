@@ -1,0 +1,25 @@
+@model IPaged
+@{
+    var statuses = ViewData["Statuses"] as string[] ?? Array.Empty<string>();
+    var placeholder = ViewData["Placeholder"] as string ?? "Search...";
+}
+<form method="get" class="table-toolbar">
+    <div class="input-group">
+        <i class="fa-solid fa-magnifying-glass input-icon"></i>
+        <input class="input" type="text" name="q" value="@Model.Q" placeholder="@placeholder" />
+    </div>
+    <div class="flex gap-12 items-center">
+        @if (statuses.Length > 0)
+        {
+            <select class="input sort-select" name="status" onchange="this.form.submit()" aria-label="Filter by status">
+                <option value="">All statuses</option>
+                @foreach (var s in statuses)
+                {
+                    <option value="@s" selected="@(Model.Status == s)">@BadgeHelper.Label(s)</option>
+                }
+            </select>
+        }
+        <button type="submit" class="btn btn-primary btn-sm">Search</button>
+        <span style="color:var(--text-light); font-size:0.85rem;">@Model.TotalCount result(s)</span>
+    </div>
+</form>

@@ -1,0 +1,149 @@
+@model AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    var returnUrl = Context.Request.Path + Context.Request.QueryString;
+    var ordersChart = new BarChartModel { Bars = Model.MonthlyOrders, Color = "var(--primary-light)" };
+    var salesChart = new BarChartModel { Bars = Model.MonthlySales, Color = "var(--accent)", Prefix = "₹" };
+    var farmersChart = new BarChartModel { Bars = Model.FarmerRegistrations, Color = "var(--primary)" };
+    var colors = new[] { "#1B5E20", "#43A047", "#F9A825", "#81C784", "#6B7280" };
+}
+
+<div class="dash-content-head">
+    <div>
+        <h1>System Overview</h1>
+        <p>Monitor and manage the entire Farm Mitra platform from here.</p>
+    </div>
+</div>
+
+<div class="grid grid-3 mt-24">
+    <a asp-area="Admin" asp-controller="Farmers" asp-action="Index" class="dash-card">
+        <div class="dash-card-top"><div class="dash-card-icon" style="background:var(--primary-tint); color:var(--primary);"><i class="fa-solid fa-user-tie"></i></div></div>
+        <div><span class="dash-num">@Model.TotalFarmers.ToString("N0")</span><span class="dash-label">Total Farmers</span></div>
+    </a>
+    <a asp-area="Admin" asp-controller="Buyers" asp-action="Index" class="dash-card">
+        <div class="dash-card-top"><div class="dash-card-icon" style="background:var(--info-tint); color:var(--info);"><i class="fa-solid fa-users"></i></div></div>
+        <div><span class="dash-num">@Model.TotalBuyers.ToString("N0")</span><span class="dash-label">Total Buyers</span></div>
+    </a>
+    <a asp-area="Admin" asp-controller="Products" asp-action="Index" class="dash-card">
+        <div class="dash-card-top"><div class="dash-card-icon" style="background:var(--accent-tint); color:var(--accent-dark);"><i class="fa-solid fa-box"></i></div></div>
+        <div><span class="dash-num">@Model.TotalProducts.ToString("N0")</span><span class="dash-label">Total Products</span></div>
+    </a>
+    <a asp-area="Admin" asp-controller="Orders" asp-action="Index" class="dash-card">
+        <div class="dash-card-top"><div class="dash-card-icon" style="background:var(--success-tint); color:var(--success);"><i class="fa-solid fa-bag-shopping"></i></div></div>
+        <div><span class="dash-num">@Model.TotalOrders.ToString("N0")</span><span class="dash-label">Total Orders</span></div>
+    </a>
+    <a asp-area="Admin" asp-controller="Farmers" asp-action="Index" asp-route-status="Pending" class="dash-card">
+        <div class="dash-card-top"><div class="dash-card-icon" style="background:var(--warning-tint); color:var(--warning);"><i class="fa-solid fa-user-clock"></i></div></div>
+        <div><span class="dash-num">@Model.PendingApprovals.ToString("N0")</span><span class="dash-label">Pending Approvals</span></div>
+    </a>
+    <a asp-area="Admin" asp-controller="Complaints" asp-action="Index" class="dash-card">
+        <div class="dash-card-top"><div class="dash-card-icon" style="background:var(--danger-tint); color:var(--danger);"><i class="fa-solid fa-triangle-exclamation"></i></div></div>
+        <div><span class="dash-num">@Model.OpenComplaints.ToString("N0")</span><span class="dash-label">Open Complaints</span></div>
+    </a>
+</div>
+
+<div class="grid grid-2 mt-24">
+    <div class="dash-panel">
+        <div class="dash-panel-head"><h2>Monthly Orders</h2><span style="font-size:0.8rem; color:var(--text-light);">Last 6 months</span></div>
+        <partial name="_BarChart" model="ordersChart" />
+    </div>
+    <div class="dash-panel">
+        <div class="dash-panel-head"><h2>Sales Overview</h2><span style="font-size:0.8rem; color:var(--text-light);">Last 6 months (₹)</span></div>
+        <partial name="_BarChart" model="salesChart" />
+    </div>
+    <div class="dash-panel">
+        <div class="dash-panel-head"><h2>Farmer Registrations</h2><span style="font-size:0.8rem; color:var(--text-light);">Last 6 months</span></div>
+        <partial name="_BarChart" model="farmersChart" />
+    </div>
+    <div class="dash-panel">
+        <div class="dash-panel-head"><h2>Product Categories</h2></div>
+        @if (Model.Categories.Count == 0)
+        {
+            <p style="color:var(--text-light); font-size:0.9rem;">No products yet.</p>
+        }
+        else
+        {
+            <svg viewBox="0 0 42 42" style="width:150px; height:150px; display:block; margin:0 auto;" role="img" aria-label="Product categories">
+                <circle cx="21" cy="21" r="15.9155" fill="transparent" stroke="#E5E7EB" stroke-width="6"></circle>
+                @for (var i = 0; i < Model.Categories.Count; i++)
+                {
+                    var c = Model.Categories[i];
+                    <circle cx="21" cy="21" r="15.9155" fill="transparent" stroke="@colors[i % colors.Length]" stroke-width="6"
+                            stroke-dasharray="@c.Dash" stroke-dashoffset="@c.DashOffset" transform="rotate(-90 21 21)"></circle>
+                }
+            </svg>
+            <div class="donut-legend">
+                @for (var i = 0; i < Model.Categories.Count; i++)
+                {
+                    var c = Model.Categories[i];
+                    <div><span class="swatch" style="background:@colors[i % colors.Length];"></span> @c.Name <span class="val">@c.Count (@Math.Round(c.Percent)%)</span></div>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+<div class="dash-panel mt-24">
+    <div class="dash-panel-head">
+        <h2>Pending Farmer Approvals</h2>
+        <a asp-area="Admin" asp-controller="Farmers" asp-action="Index" asp-route-status="Pending">View All</a>
+    </div>
+
+    @if (!Model.PendingFarmers.Any())
+    {
+        <p style="color:var(--text-light); font-size:0.9rem;">No farmers are waiting for approval.</p>
+    }
+    @foreach (var f in Model.PendingFarmers)
+    {
+        <div class="approval-row">
+            <div class="cell-person">
+                @if (!string.IsNullOrEmpty(f.ProfileImagePath)) { <img class="avatar-img" src="@f.ProfileImagePath" alt="" /> }
+                                else { <div class="avatar-initial">@f.FullName.Substring(0, 1).ToUpper()</div> }
+                <div>
+                    <div style="font-weight:600; font-size:0.92rem;">@f.FullName</div>
+                    <span class="cell-sub">@f.FarmLocation @(f.FarmSizeAcres.HasValue ? " - " + f.FarmSizeAcres + " acres" : "")</span>
+                </div>
+            </div>
+            <div class="flex gap-8">
+                <form asp-area="Admin" asp-controller="Farmers" asp-action="Approve" asp-route-id="@f.Id" method="post"
+                      data-confirm="@f.FullName will be able to log in and list products." data-confirm-title="Approve this farmer?" data-confirm-button="Approve">
+                    <input type="hidden" name="returnUrl" value="@returnUrl" />
+                    <button type="submit" class="btn btn-secondary btn-sm"><i class="fa-solid fa-check"></i> Approve</button>
+                </form>
+                <form asp-area="Admin" asp-controller="Farmers" asp-action="Reject" asp-route-id="@f.Id" method="post"
+                      data-confirm="@f.FullName will not be able to log in." data-confirm-title="Reject this farmer?" data-confirm-button="Reject" data-danger="true">
+                    <input type="hidden" name="returnUrl" value="@returnUrl" />
+                    <button type="submit" class="btn btn-danger btn-sm"><i class="fa-solid fa-xmark"></i> Reject</button>
+                </form>
+            </div>
+        </div>
+    }
+</div>
+
+<div class="dash-panel mt-24">
+    <div class="dash-panel-head">
+        <h2>Recent Complaints</h2>
+        <a asp-area="Admin" asp-controller="Complaints" asp-action="Index">View All</a>
+    </div>
+    <div class="table-scroll">
+        <table class="data-table">
+            <thead><tr><th>ID</th><th>Subject</th><th>Raised By</th><th>Date</th><th>Status</th></tr></thead>
+            <tbody>
+                @foreach (var c in Model.RecentComplaints)
+                {
+                    <tr>
+                        <td>#CMP-@c.Id</td>
+                        <td>@c.Subject</td>
+                        <td>@c.UserName</td>
+                        <td>@c.CreatedAt.ToString("dd MMM yyyy")</td>
+                        <td><span class="badge @BadgeHelper.Css(c.Status)">@c.Status</span></td>
+                    </tr>
+                }
+                @if (!Model.RecentComplaints.Any())
+                {
+                    <tr class="empty-row"><td colspan="5">No complaints yet.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

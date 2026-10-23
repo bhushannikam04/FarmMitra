@@ -1,0 +1,55 @@
+/* Farm Mitra - weather */
+
+.wx-search { display: flex; gap: 10px; width: 100%; max-width: 420px; }
+.wx-search .input-group { flex: 1; }
+
+.wx-now { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: var(--white); border-radius: var(--radius-lg); padding: 30px; display: grid; grid-template-columns: auto 1fr; gap: 32px; align-items: center; }
+.wx-now-main { display: flex; align-items: center; gap: 22px; }
+.wx-now-icon { font-size: 3.6rem; color: var(--accent); }
+.wx-temp { font-family: var(--font-display); font-size: 3.6rem; font-weight: 700; line-height: 1; }
+.wx-desc { margin-top: 8px; opacity: 0.88; font-size: 0.95rem; }
+.wx-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 14px; }
+.wx-stat { background: rgba(255, 255, 255, 0.12); border-radius: var(--radius-sm); padding: 14px 16px; }
+.wx-stat span { display: block; font-size: 0.76rem; opacity: 0.8; margin-bottom: 4px; }
+.wx-stat strong { font-size: 1.1rem; }
+
+.wx-chips { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 18px; font-size: 0.86rem; color: var(--text-light); }
+.wx-chips a { background: var(--white); border: 1px solid var(--border); border-radius: 999px; padding: 5px 12px; font-weight: 600; color: var(--primary); }
+.wx-chips a:hover { background: var(--primary-tint); }
+
+.advice { display: flex; gap: 14px; padding: 14px 16px; border-radius: var(--radius-sm); border-left: 4px solid; margin-bottom: 12px; }
+.advice:last-child { margin-bottom: 0; }
+.advice i { margin-top: 3px; font-size: 1.05rem; }
+.advice strong { display: block; font-size: 0.94rem; margin-bottom: 3px; color: var(--text-dark); }
+.advice p { font-size: 0.86rem; color: var(--text-light); }
+.advice.danger { background: var(--danger-tint); border-color: var(--danger); } .advice.danger i { color: var(--danger); }
+.advice.warning { background: var(--warning-tint); border-color: var(--warning); } .advice.warning i { color: var(--warning); }
+.advice.info { background: var(--info-tint); border-color: var(--info); } .advice.info i { color: var(--info); }
+.advice.success { background: var(--success-tint); border-color: var(--success); } .advice.success i { color: var(--success); }
+
+.fc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 12px; }
+.fc-day { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 16px 12px; text-align: center; }
+.fc-day.today { border-color: var(--primary); background: var(--primary-tint); }
+.fc-day .fc-name { font-weight: 700; font-size: 0.88rem; }
+.fc-day .fc-date { font-size: 0.74rem; color: var(--text-light); margin-bottom: 10px; }
+.fc-day .fc-icon { font-size: 1.7rem; color: var(--primary); margin-bottom: 10px; }
+.fc-day .fc-temp { font-family: var(--font-display); font-weight: 700; }
+.fc-day .fc-temp span { color: var(--text-muted); font-weight: 500; }
+.fc-day .fc-rain { font-size: 0.78rem; color: var(--info); margin-top: 6px; }
+
+/* dashboard card */
+.wx-mini { display: flex; align-items: center; justify-content: space-between; gap: 24px; flex-wrap: wrap; }
+.wx-mini-now { display: flex; align-items: center; gap: 16px; }
+.wx-mini-now i { font-size: 2.2rem; color: var(--accent-dark); }
+.wx-mini-temp { font-family: var(--font-display); font-size: 2.2rem; font-weight: 700; line-height: 1; }
+.wx-mini-sub { font-size: 0.85rem; color: var(--text-light); margin-top: 4px; }
+.wx-mini-metrics { display: flex; gap: 26px; }
+.wx-mini-tip { font-size: 0.85rem; padding: 10px 14px; border-radius: var(--radius-sm); background: var(--background); color: var(--text-dark); max-width: 320px; }
+.wx-mini-tip.danger { background: var(--danger-tint); } .wx-mini-tip.warning { background: var(--warning-tint); }
+.wx-mini-tip.info { background: var(--info-tint); } .wx-mini-tip.success { background: var(--success-tint); }
+
+@media (max-width: 768px) {
+    .wx-now { grid-template-columns: 1fr; padding: 22px; gap: 22px; }
+    .wx-temp { font-size: 2.8rem; }
+    .wx-search { max-width: none; }
+}

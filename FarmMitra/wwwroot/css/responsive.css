@@ -1,0 +1,137 @@
+/* ============================================================
+   FARM MITRA — RESPONSIVE RULES
+   ============================================================ */
+
+/* ---- Large desktops down to laptops ---- */
+@media (max-width: 1200px) {
+    .container { padding: 0 20px; }
+    .hero-grid { gap: 40px; }
+}
+
+/* ---- Tablets ---- */
+@media (max-width: 992px) {
+    section { padding: 72px 0; }
+
+    .nav-links { display: none; }
+    .nav-toggle { display: flex; }
+
+    .hero-grid {
+        grid-template-columns: 1fr;
+    }
+    .hero-visual { order: -1; }
+    .hero-stats { grid-template-columns: repeat(4, 1fr); }
+
+    .grid-4 { grid-template-columns: repeat(2, 1fr); }
+    .grid-3 { grid-template-columns: repeat(2, 1fr); }
+    .grid-2 { grid-template-columns: 1fr; }
+
+    .steps-row { grid-template-columns: repeat(2, 1fr); }
+
+    .footer-grid { grid-template-columns: 1fr 1fr; }
+
+    .floating-card-top { right: 10px; }
+    .floating-card-bottom { left: 10px; }
+    .cta-banner { padding: 40px 32px; justify-content: center; text-align: center; }
+    .cta-banner .hero-actions { justify-content: center; }
+
+    .auth-page { grid-template-columns: 1fr; }
+    .auth-visual { display: none; }
+    .auth-form-box .brand { display: flex; }
+
+    .marketplace-layout { grid-template-columns: 1fr; }
+    .filter-panel { position: static; }
+
+    .dash-sidebar { position: fixed; left: -264px; top: 0; transition: left 0.22s var(--ease); box-shadow: var(--shadow-lg); }
+    .dash-sidebar.open { left: 0; }
+    .dash-topbar-mobile-toggle { display: flex; }
+    .dash-topbar-search { display: none; }
+    .dash-content { padding: 22px; }
+    .grid-4.dash-stats { grid-template-columns: repeat(2, 1fr); }
+
+    .bento-grid { grid-template-columns: repeat(2, 1fr); grid-template-rows: auto; }
+    .bento-photo { grid-column: 1 / 3; grid-row: auto; min-height: 260px; }
+
+    .timeline::before { left: 26px; }
+    .timeline-item, .timeline-item:nth-child(even) { flex-direction: row; text-align: left; }
+    .timeline-item:nth-child(even) .timeline-content { text-align: left; }
+    .timeline-item:nth-child(even) .timeline-content .step-icon { margin-left: 0; }
+    .timeline-marker { width: 44px; height: 44px; font-size: 0.82rem; }
+
+    .farmer-spotlight { grid-template-columns: 1fr; }
+    .farmer-spotlight-main { grid-template-columns: 1fr; }
+    .farmer-spotlight-main img { min-height: 220px; }
+    .farmer-spotlight-list { flex-direction: row; }
+
+    .about-alt-grid { grid-template-columns: 1fr; }
+    .about-alt-img { min-height: 240px; order: -1; }
+}
+
+/* ---- Large phones / small tablets ---- */
+@media (max-width: 768px) {
+    section { padding: 56px 0; }
+
+    .section-heading { max-width: 100%; }
+    .section-head-row { flex-direction: column; align-items: flex-start; gap: 14px; }
+
+    .hero-stats { grid-template-columns: repeat(2, 1fr); }
+
+    .grid-4 { grid-template-columns: 1fr 1fr; }
+    .grid-3 { grid-template-columns: 1fr; }
+
+    .steps-row { grid-template-columns: 1fr; }
+
+    .form-row { grid-template-columns: 1fr; }
+
+    .nav-actions .btn:not(.btn-icon) span { display: none; }
+
+    .footer-grid { grid-template-columns: 1fr; gap: 32px; }
+    .footer-bottom { flex-direction: column; align-items: flex-start; }
+
+    .usertype-cards { grid-template-columns: 1fr; }
+    .marketplace-search { flex-direction: column; }
+
+    .dash-user .name, .dash-user .role { display: none; }
+    .dash-topbar { padding: 0 16px; }
+    .table-toolbar .input-group { width: 100%; }
+    .weather-card { flex-direction: column; align-items: flex-start; gap: 16px; }
+
+    .bento-grid { grid-template-columns: 1fr; }
+    .bento-photo { grid-column: 1; }
+    .farmer-spotlight-list { flex-direction: column; }
+}
+
+/* ---- Small phones ---- */
+@media (max-width: 576px) {
+    .container { padding: 0 16px; }
+
+    .hero-title { font-size: 2.1rem; }
+    .hero-actions { flex-direction: column; align-items: stretch; }
+    .hero-actions .btn { width: 100%; }
+
+    .hero-stats { grid-template-columns: 1fr 1fr; gap: 12px; }
+    .stat-card { padding: 16px; }
+    .stat-card .stat-num { font-size: 1.4rem; }
+
+    .navbar .container { height: 68px; }
+    .brand span.brand-text { font-size: 1.05rem; }
+
+    .product-actions { flex-direction: column; }
+
+    .farmer-card { flex-direction: column; text-align: left; }
+
+    .floating-card { padding: 10px 12px; gap: 8px; }
+    .floating-card-top { top: 12px; }
+    .floating-card-bottom { bottom: 12px; }
+
+    .auth-form-side { padding: 32px 20px; }
+    .auth-role-toggle { flex-direction: column; }
+
+    .dash-content .grid-4 { grid-template-columns: 1fr; }
+    .dash-panel { overflow-x: auto; }
+    .data-table { min-width: 560px; }
+
+    .bento-tile { padding: 16px; }
+    .scroll-row .product-card { flex-basis: 240px; }
+    .timeline-marker { width: 38px; height: 38px; }
+    .timeline-item { gap: 16px; }
+}

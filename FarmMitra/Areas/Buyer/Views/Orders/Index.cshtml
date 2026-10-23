@@ -1,0 +1,42 @@
+@model PagedResult<OrderListRow>
+@{
+    ViewData["Title"] = "My Orders";
+    ViewData["Placeholder"] = "Search order number or product...";
+    ViewData["Statuses"] = new[] { "Pending", "Confirmed", "Shipped", "Delivered", "Cancelled" };
+}
+
+<div class="dash-content-head">
+    <div>
+        <h1>My Orders</h1>
+        <p>Track every order you've placed.</p>
+    </div>
+</div>
+
+<div class="dash-panel">
+    <partial name="_ListToolbar" model="(IPaged)Model" />
+
+    <div class="table-scroll">
+        <table class="data-table">
+            <thead><tr><th>Order</th><th>Items</th><th>Date</th><th>Total</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var o in Model.Items)
+                {
+                    <tr>
+                        <td>#FM-@o.Id</td>
+                        <td>@o.FirstProduct@(o.ItemCount > 1 ? " +" + (o.ItemCount - 1) + " more" : "")</td>
+                        <td>@o.OrderDate.ToString("dd MMM yyyy")</td>
+                        <td>₹@o.Total.ToString("N0")</td>
+                        <td><span class="badge @BadgeHelper.Css(o.Status)">@o.Status</span></td>
+                        <td><a asp-area="Buyer" asp-controller="Orders" asp-action="Details" asp-route-id="@o.Id" class="btn btn-outline btn-sm">View</a></td>
+                    </tr>
+                }
+                @if (!Model.Items.Any())
+                {
+                    <tr class="empty-row"><td colspan="6">No orders found. <a asp-area="" asp-controller="Marketplace" asp-action="Index" style="color:var(--primary); font-weight:600;">Start shopping</a>.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <partial name="_Pager" model="(IPaged)Model" />
+</div>

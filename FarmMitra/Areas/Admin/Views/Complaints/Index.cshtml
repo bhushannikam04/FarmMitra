@@ -1,0 +1,59 @@
+@model PagedResult<ComplaintRow>
+@{
+    ViewData["Title"] = "Complaints";
+    ViewData["Placeholder"] = "Search subject, type or user...";
+    ViewData["Statuses"] = new[] { "Pending", "Under Review", "Resolved", "Rejected" };
+    var returnUrl = Context.Request.Path + Context.Request.QueryString;
+    var allStatuses = new[] { "Pending", "Under Review", "Resolved", "Rejected" };
+}
+
+<div class="dash-content-head">
+    <div>
+        <h1>Complaints</h1>
+        <p>Review and resolve issues raised by buyers and farmers.</p>
+    </div>
+</div>
+
+<div class="dash-panel">
+    <partial name="_ListToolbar" model="(IPaged)Model" />
+
+    <div class="table-scroll">
+        <table class="data-table">
+            <thead>
+                <tr><th>ID</th><th>Subject</th><th>Raised By</th><th>Type</th><th>Order</th><th>Date</th><th>Status</th><th>Update</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model.Items)
+                {
+                    <tr>
+                        <td>#CMP-@c.Id</td>
+                        <td title="@c.Description">@c.Subject</td>
+                        <td>@c.UserName</td>
+                        <td>@c.Type</td>
+                        <td>@(c.OrderId.HasValue ? "#FM-" + c.OrderId : "-")</td>
+                        <td>@c.CreatedAt.ToString("dd MMM yyyy")</td>
+                        <td><span class="badge @BadgeHelper.Css(c.Status)">@c.Status</span></td>
+                        <td>
+                            <form asp-area="Admin" asp-controller="Complaints" asp-action="UpdateStatus" asp-route-id="@c.Id" method="post" class="flex gap-8 items-center">
+                                <input type="hidden" name="returnUrl" value="@returnUrl" />
+                                <select name="status" class="input select-sm" aria-label="New status">
+                                    @foreach (var s in allStatuses)
+                                    {
+                                        <option value="@s" selected="@(s == c.Status)">@s</option>
+                                    }
+                                </select>
+                                <button type="submit" class="btn btn-secondary btn-sm">Save</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Items.Any())
+                {
+                    <tr class="empty-row"><td colspan="8">No complaints found.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <partial name="_Pager" model="(IPaged)Model" />
+</div>

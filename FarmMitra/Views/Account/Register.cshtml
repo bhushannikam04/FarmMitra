@@ -1,0 +1,176 @@
+@model FarmMitra.ViewModels.RegisterViewModel
+@{
+    Layout = "_AuthLayout";
+    ViewData["Title"] = "Create Account";
+    var isFarmer = Model.Role == "Farmer";
+}
+
+<div class="auth-page">
+
+    <div class="auth-visual">
+        <img src="https://images.unsplash.com/photo-1625246333195-78d9c38ad449?w=900&q=80&auto=format&fit=crop" alt="" />
+        <a href="~/" class="brand">
+            <span class="brand-mark">FM</span>
+            <span class="brand-text">Farm Mitra</span>
+        </a>
+
+        <div class="auth-visual-copy">
+            <h2>Join a transparent agricultural marketplace</h2>
+            <p>Whether you grow it or buy it, Farm Mitra gives you one honest place to manage it all.</p>
+        </div>
+
+        <div class="auth-visual-stats">
+            <div><strong>500+</strong><span>Farmers</span></div>
+            <div><strong>10K+</strong><span>Customers</span></div>
+            <div><strong>100%</strong><span>Transparent</span></div>
+        </div>
+    </div>
+
+    <div class="auth-form-side">
+        <div class="auth-form-box wide">
+            <a href="~/" class="brand">
+                <span class="brand-mark">FM</span>
+                <span class="brand-text">Farm Mitra</span>
+            </a>
+
+            <h1>Create Your Account</h1>
+            <p class="auth-sub">Get started in a few minutes. Farmer accounts are reviewed by our team before going live.</p>
+
+            <form asp-controller="Account" asp-action="Register" method="post" novalidate>
+
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="margin-bottom:20px;"></div>
+
+                <div class="form-section-title"><i class="fa-solid fa-user-check"></i> I am a</div>
+                <div class="usertype-cards">
+                    <label class="usertype-card @(isFarmer ? "selected" : "")" id="card-farmer">
+                        <input type="radio" asp-for="Role" value="Farmer" />
+                        <i class="fa-solid fa-tractor"></i>
+                        <strong>Farmer</strong>
+                        <span>Sell your produce directly</span>
+                    </label>
+                    <label class="usertype-card @(!isFarmer ? "selected" : "")" id="card-buyer">
+                        <input type="radio" asp-for="Role" value="Buyer" />
+                        <i class="fa-solid fa-basket-shopping"></i>
+                        <strong>Buyer</strong>
+                        <span>Shop fresh from local farms</span>
+                    </label>
+                </div>
+                <span asp-validation-for="Role" class="field-error"></span>
+
+                <div class="form-section-title"><i class="fa-solid fa-id-card"></i> Personal Details</div>
+                <div class="form-row">
+                    <div class="field">
+                        <label asp-for="FullName">Full Name</label>
+                        <input asp-for="FullName" class="input" placeholder="Enter your full name" />
+                        <span asp-validation-for="FullName" class="field-error"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="PhoneNumber">Mobile Number</label>
+                        <input asp-for="PhoneNumber" class="input" placeholder="+91 98765 43210" />
+                        <span asp-validation-for="PhoneNumber" class="field-error"></span>
+                    </div>
+                </div>
+                <div class="field">
+                    <label asp-for="Email">Email</label>
+                    <input asp-for="Email" class="input" placeholder="you&#64;example.com" autocomplete="email" />
+                    <span asp-validation-for="Email" class="field-error"></span>
+                </div>
+                <div class="form-row">
+                    <div class="field">
+                        <label asp-for="Password">Password</label>
+                        <input asp-for="Password" class="input" placeholder="Create a password" autocomplete="new-password" />
+                        <div class="hint">6+ characters with upper and lower case, a number and a symbol.</div>
+                        <span asp-validation-for="Password" class="field-error"></span>
+                    </div>
+                    <div class="field">
+                        <label asp-for="ConfirmPassword">Confirm Password</label>
+                        <input asp-for="ConfirmPassword" class="input" placeholder="Re-enter password" autocomplete="new-password" />
+                        <span asp-validation-for="ConfirmPassword" class="field-error"></span>
+                    </div>
+                </div>
+
+                <div class="form-section-title"><i class="fa-solid fa-location-dot"></i> Address</div>
+                <div class="field">
+                    <label asp-for="Address">Address</label>
+                    <input asp-for="Address" class="input" placeholder="House / Street / Village" />
+                </div>
+                <div class="form-row">
+                    <div class="field">
+                        <label asp-for="City">City</label>
+                        <input asp-for="City" class="input" placeholder="e.g. Nashik" />
+                    </div>
+                    <div class="field">
+                        <label asp-for="State">State</label>
+                        <select asp-for="State" class="input">
+                            <option value="">Select State</option>
+                            @foreach (var s in new[] { "Maharashtra", "Karnataka", "Gujarat", "Punjab", "Uttar Pradesh", "Telangana", "Andhra Pradesh", "Madhya Pradesh", "Rajasthan", "Tamil Nadu" })
+                            {
+                                <option value="@s">@s</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div id="farmer-fields" style="@(isFarmer ? "" : "display:none;")">
+                    <div class="form-section-title"><i class="fa-solid fa-seedling"></i> Farm Details</div>
+                    <div class="form-row">
+                        <div class="field">
+                            <label asp-for="FarmLocation">Farm Location</label>
+                            <input asp-for="FarmLocation" class="input" placeholder="Village, Taluka, District" />
+                            <span asp-validation-for="FarmLocation" class="field-error"></span>
+                        </div>
+                        <div class="field">
+                            <label asp-for="FarmSizeAcres">Farm Size (Acres)</label>
+                            <input asp-for="FarmSizeAcres" type="number" step="0.1" min="0" class="input" placeholder="e.g. 5" />
+                            <span asp-validation-for="FarmSizeAcres" class="field-error"></span>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="field">
+                            <label asp-for="CropsGrown">Agricultural Products</label>
+                            <input asp-for="CropsGrown" class="input" placeholder="Onion, Grapes, Tomato..." />
+                            <span asp-validation-for="CropsGrown" class="field-error"></span>
+                        </div>
+                        <div class="field">
+                            <label asp-for="ExperienceYears">Experience (Years)</label>
+                            <input asp-for="ExperienceYears" type="number" min="0" class="input" placeholder="e.g. 8" />
+                            <span asp-validation-for="ExperienceYears" class="field-error"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <label class="checkbox-row mt-8" style="margin-bottom:6px;">
+                    <input asp-for="AcceptTerms" />
+                    I agree to the Terms of Service and Privacy Policy
+                </label>
+                <span asp-validation-for="AcceptTerms" class="field-error" style="margin-bottom:18px;"></span>
+
+                <button type="submit" class="btn btn-primary btn-block" style="margin-top:12px;">
+                    <i class="fa-solid fa-user-plus"></i> Create Account
+                </button>
+            </form>
+
+            <p class="auth-footer-link">
+                Already have an account? <a asp-controller="Account" asp-action="Login">Login</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const cardFarmer = document.getElementById('card-farmer');
+        const cardBuyer = document.getElementById('card-buyer');
+        const farmerFields = document.getElementById('farmer-fields');
+
+        function applyRole(role) {
+            const farmer = role === 'Farmer';
+            cardFarmer.classList.toggle('selected', farmer);
+            cardBuyer.classList.toggle('selected', !farmer);
+            farmerFields.style.display = farmer ? 'block' : 'none';
+        }
+
+        document.querySelectorAll('input[name="Role"]').forEach(r =>
+            r.addEventListener('change', () => applyRole(r.value)));
+    </script>
+}

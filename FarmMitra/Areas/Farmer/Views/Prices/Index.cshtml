@@ -1,0 +1,162 @@
+@model PriceAnalysisViewModel
+@{
+    ViewData["Title"] = "Price Analysis";
+    var chart = new BarChartModel { Bars = Model.Trend, Color = "var(--primary-light)", Prefix = "₹" };
+    var hasTrendData = Model.Trend.Any(t => t.Value > 0);
+}
+
+<style>
+    .px-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 16px; }
+    .px-card { display: block; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 18px; transition: box-shadow 0.18s var(--ease), border-color 0.18s var(--ease); }
+    .px-card:hover { box-shadow: var(--shadow-md); }
+    .px-card.selected { border-color: var(--primary); box-shadow: 0 0 0 3px var(--primary-tint); }
+    .px-name { font-family: var(--font-display); font-weight: 600; margin-bottom: 6px; }
+    .px-price { font-family: var(--font-display); font-size: 1.35rem; font-weight: 700; color: var(--primary-dark); }
+    .px-price span { font-family: var(--font-body); font-size: 0.78rem; font-weight: 400; color: var(--text-light); }
+    .px-card .dash-trend { margin: 6px 0 8px; }
+    .px-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 14px; margin-bottom: 18px; }
+    .px-stat { background: var(--background); border-radius: var(--radius-sm); padding: 14px 16px; }
+    .px-stat span { display: block; font-size: 0.76rem; color: var(--text-light); margin-bottom: 4px; }
+    .px-stat strong { font-family: var(--font-display); font-size: 1.15rem; }
+</style>
+
+<div class="dash-content-head">
+    <div>
+        <h1>Price Analysis</h1>
+        <p>See how your prices compare with other sellers on Farm Mitra.</p>
+    </div>
+</div>
+
+<div class="chat-notice" style="margin-bottom:20px;">
+    <i class="fa-solid fa-circle-info"></i>
+    <span>These numbers come from Farm Mitra listings, price changes and orders, not from government mandi rates. Everything is shown per quintal, and other sellers appear only as averages.</span>
+</div>
+
+@if (!Model.Market.Any() && !Model.Rows.Any())
+{
+    <div class="dash-panel" style="text-align:center; padding:48px 24px;">
+        <div class="feature-icon" style="margin:0 auto 16px; width:64px; height:64px; font-size:1.5rem; border-radius:50%;"><i class="fa-solid fa-chart-line"></i></div>
+        <h2 style="font-size:1.25rem; margin-bottom:6px;">No prices to analyse yet</h2>
+        <p class="section-sub" style="margin:0 auto 18px;">Once products are listed in the marketplace, you'll see how prices compare here.</p>
+        <a asp-area="Farmer" asp-controller="Products" asp-action="Create" class="btn btn-primary">Add a product</a>
+    </div>
+}
+else
+{
+    <div class="dash-panel">
+        <div class="dash-panel-head"><h2>Market Prices</h2><span style="font-size:0.8rem; color:var(--text-light);">Average listing price per quintal. Choose one for details.</span></div>
+        <div class="px-grid">
+            @foreach (var m in Model.Market)
+            {
+                <a asp-area="Farmer" asp-controller="Prices" asp-action="Index" asp-route-key="@m.Key" class="px-card @(m.Key == Model.SelectedKey ? "selected" : "")">
+                    <div class="px-name">@m.Commodity</div>
+                    <div class="px-price">₹@m.Avg.ToString("N0") <span>/ Quintal</span></div>
+                    @if (m.TrendPercent is decimal t)
+                    {
+                        <span class="dash-trend @(t >= 0 ? "up" : "down")"><i class="fa-solid @(t >= 0 ? "fa-arrow-up" : "fa-arrow-down")"></i> @Math.Abs(t).ToString("0.#")% this month</span>
+                    }
+                    else
+                    {
+                        <span class="cell-sub" style="margin:6px 0 8px;">Trend builds with time</span>
+                    }
+                    <div class="cell-sub">₹@m.Min.ToString("N0") to ₹@m.Max.ToString("N0") - @m.Sellers @(m.Sellers == 1 ? "seller" : "sellers")</div>
+                </a>
+            }
+        </div>
+    </div>
+
+    @if (Model.SelectedKey != null)
+    {
+        <div class="dash-panel mt-24">
+            <div class="dash-panel-head">
+                <h2>@Model.SelectedName</h2>
+                @if (Model.SelectedTrend is decimal st)
+                {
+                    <span class="dash-trend @(st >= 0 ? "up" : "down")"><i class="fa-solid @(st >= 0 ? "fa-arrow-up" : "fa-arrow-down")"></i> @Math.Abs(st).ToString("0.#")% vs previous 30 days</span>
+                }
+            </div>
+
+            <div class="px-stats">
+                @if (Model.SelectedRow?.MyPerQuintal is decimal mine)
+                {
+                    <div class="px-stat"><span>Your price</span><strong>₹@mine.ToString("N0")</strong></div>
+                }
+                @if (Model.Selected != null)
+                {
+                    <div class="px-stat"><span>Market average</span><strong>₹@Model.Selected.Avg.ToString("N0")</strong></div>
+                    <div class="px-stat"><span>Lowest</span><strong>₹@Model.Selected.Min.ToString("N0")</strong></div>
+                    <div class="px-stat"><span>Highest</span><strong>₹@Model.Selected.Max.ToString("N0")</strong></div>
+                    <div class="px-stat"><span>Sellers</span><strong>@Model.Selected.Sellers</strong></div>
+                }
+            </div>
+
+            @if (Model.AdviceText != null)
+            {
+                <div class="advice @Model.AdviceLevel" style="margin-bottom:22px;">
+                    <i class="fa-solid fa-lightbulb" aria-hidden="true"></i>
+                    <div><strong>What this means for you</strong><p>@Model.AdviceText</p></div>
+                </div>
+            }
+
+            <div class="dash-panel-head" style="margin-top:6px;"><h2 style="font-size:0.95rem;">Average price by month (₹ per quintal)</h2></div>
+            @if (hasTrendData)
+            {
+                <partial name="_BarChart" model="chart" />
+                <p class="cell-sub" style="margin-top:10px;">Built from price changes and completed orders. Months without data show as empty bars.</p>
+            }
+            else
+            {
+                <p class="cell-sub">No price history for this product yet. It builds up each time a price changes or an order is placed.</p>
+            }
+        </div>
+    }
+
+    <div class="dash-panel mt-24">
+        <div class="dash-panel-head"><h2>My Products vs Market</h2></div>
+        <div class="table-scroll">
+            <table class="data-table">
+                <thead>
+                    <tr><th>Product</th><th>Your price</th><th>Market avg</th><th>Range</th><th>Other sellers</th><th>Compared to market</th><th></th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var r in Model.Rows)
+                    {
+                        <tr>
+                            <td>
+                                <div class="table-product">
+                                    <img src="@(string.IsNullOrEmpty(r.ImagePath) ? "/images/placeholder.svg" : r.ImagePath)" alt="" onerror="this.onerror=null;this.src='/images/placeholder.svg';" />
+                                    <div><a asp-area="Farmer" asp-controller="Prices" asp-action="Index" asp-route-key="@r.Key">@r.Name</a><span class="cell-sub">₹@r.MyPrice.ToString("N0") / @r.Unit</span></div>
+                                </div>
+                            </td>
+                            <td>@(r.MyPerQuintal.HasValue ? "₹" + r.MyPerQuintal.Value.ToString("N0") : "-")</td>
+                            <td>@(r.MarketAvg.HasValue ? "₹" + r.MarketAvg.Value.ToString("N0") : "-")</td>
+                            <td>@(r.MarketMin.HasValue ? "₹" + r.MarketMin.Value.ToString("N0") + " to ₹" + r.MarketMax!.Value.ToString("N0") : "-")</td>
+                            <td>@(r.OthersCount > 0 ? r.OthersCount.ToString() : "-")</td>
+                            <td>
+                                @{
+                                    var badge = r.Verdict switch
+                                    {
+                                        "Above market" => "badge-warning",
+                                        "Below market" => "badge-info",
+                                        "In line" => "badge-success",
+                                        _ => "badge-neutral"
+                                    };
+                                }
+                                <span class="badge @badge">@r.Verdict</span>
+                                @if (r.DiffPercent.HasValue)
+                                {
+                                    <span class="cell-sub">@(r.DiffPercent > 0 ? "+" : "")@r.DiffPercent.Value.ToString("0.#")% vs average</span>
+                                }
+                            </td>
+                            <td><a asp-area="Farmer" asp-controller="Products" asp-action="Edit" asp-route-id="@r.ProductId" class="btn btn-outline btn-sm">Edit price</a></td>
+                        </tr>
+                    }
+                    @if (!Model.Rows.Any())
+                    {
+                        <tr class="empty-row"><td colspan="7">You haven't listed any products yet.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

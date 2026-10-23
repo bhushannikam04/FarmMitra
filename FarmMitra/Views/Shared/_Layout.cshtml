@@ -1,0 +1,170 @@
+@using Microsoft.AspNetCore.Identity
+@using FarmMitra.Models
+@inject SignInManager<ApplicationUser> SignInManager
+@using System.Security.Claims
+@using Microsoft.EntityFrameworkCore
+@inject FarmMitra.Data.ApplicationDbContext Db
+@inject FarmMitra.Services.SettingsService SettingsSvc
+@{
+    var site = await SettingsSvc.GetAsync();
+    var supportTel = new string(site.SupportPhone.Where(c => char.IsDigit(c) || c == '+').ToArray());
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    var dashboardUrl = User.IsInRole("Admin") ? "/Admin/Dashboard"
+                     : User.IsInRole("Farmer") ? "/Farmer/Dashboard"
+                     : "/Buyer/Dashboard";
+    var cartCount = 0;
+    if (User.IsInRole("Buyer"))
+    {
+        var buyerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        cartCount = await Db.CartItems.CountAsync(c => c.BuyerId == buyerId);
+    }
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Farm Mitra</title>
+    <link rel="stylesheet" href="~/css/style.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/responsive.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .cart-link { position: relative; }
+        .cart-link .cart-badge { position: absolute; top: -6px; right: -6px; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 999px; background: var(--accent); color: var(--primary-dark); font-size: 0.72rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+    </style>
+    <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
+    <meta name="theme-color" content="#1B5E20" />
+    <script src="~/js/theme.js"></script>
+    <link rel="stylesheet" href="~/css/lang.css" asp-append-version="true" />
+    <script src="~/js/lang.js" defer></script>
+</head>
+<body>
+
+<header class="navbar">
+    <div class="container">
+        <a href="~/" class="brand">
+            <span class="brand-mark">FM</span>
+            <span class="brand-text">Farm Mitra</span>
+        </a>
+
+        <nav class="nav-links" aria-label="Primary">
+            <a href="~/" class="@(controller == "Home" ? "active" : "")">Home</a>
+            <a href="~/Marketplace" class="@(controller == "Marketplace" ? "active" : "")">Marketplace</a>
+            <a href="~/#how-it-works">How It Works</a>
+            <a href="~/#farmers">Our Farmers</a>
+            <a href="~/#about">About Us</a>
+            <a href="~/#contact">Contact</a>
+        </nav>
+
+        <div class="nav-actions">
+            @if (SignInManager.IsSignedIn(User))
+            {
+                @if (User.IsInRole("Buyer"))
+                {
+                    <a href="~/Buyer/Cart" class="btn btn-outline btn-icon cart-link" aria-label="Cart">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                        @if (cartCount > 0) { <span class="cart-badge">@cartCount</span> }
+                    </a>
+                }
+                <a href="@dashboardUrl" class="btn btn-primary"><span>My Dashboard</span></a>
+                <form method="post" asp-controller="Account" asp-action="Logout" style="margin:0;">
+                    <button type="submit" class="btn btn-outline"><span>Logout</span></button>
+                </form>
+            }
+            else
+            {
+                <a href="~/Account/Login" class="btn btn-outline"><span>Login</span></a>
+                <a href="~/Account/Register?role=Farmer" class="btn btn-primary"><span>Join as Farmer</span></a>
+            }
+            <partial name="_LanguagePicker" />
+            <partial name="_ThemeToggle" />
+            <button class="nav-toggle btn-icon btn-outline" aria-label="Open menu" aria-expanded="false">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+    </div>
+
+    <nav class="mobile-nav" aria-label="Mobile">
+        <a href="~/">Home</a>
+        <a href="~/Marketplace">Marketplace</a>
+        <a href="~/#how-it-works">How It Works</a>
+        <a href="~/#farmers">Our Farmers</a>
+        <a href="~/#about">About Us</a>
+        <a href="~/#contact">Contact</a>
+        @if (SignInManager.IsSignedIn(User))
+        {
+            <a href="@dashboardUrl" class="mobile-cta">My Dashboard</a>
+        }
+        else
+        {
+            <a href="~/Account/Login">Login</a>
+            <a href="~/Account/Register?role=Farmer" class="mobile-cta">Join as Farmer</a>
+        }
+    </nav>
+</header>
+
+@if (TempData["Success"] is string flashOk)
+{
+    <div class="container" style="padding-top:20px;"><div class="alert alert-success"><i class="fa-solid fa-circle-check"></i> @flashOk</div></div>
+}
+@if (TempData["Error"] is string flashErr)
+{
+    <div class="container" style="padding-top:20px;"><div class="alert alert-danger"><i class="fa-solid fa-circle-exclamation"></i> @flashErr</div></div>
+}
+
+<main>
+    @RenderBody()
+</main>
+
+<footer class="site-footer" id="contact">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-about">
+                <a href="~/" class="brand">
+                    <span class="brand-mark">FM</span>
+                    <span class="brand-text">Farm Mitra</span>
+                </a>
+                <p>Connecting farmers. Empowering agriculture. A transparent marketplace for farmers, buyers and everyone in between.</p>
+                <div class="footer-social">
+                    <a href="#" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="#" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="#" aria-label="Twitter"><i class="fa-brands fa-x-twitter"></i></a>
+                    <a href="#" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+                </div>
+            </div>
+            <div class="footer-col">
+                <h5>Platform</h5>
+                <ul>
+                    <li><a href="~/Marketplace">Marketplace</a></li>
+                    <li><a href="~/#how-it-works">How It Works</a></li>
+                    <li><a href="~/#farmers">Our Farmers</a></li>
+                    <li><a href="~/#about">About Us</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h5>Account</h5>
+                <ul>
+                    <li><a href="~/Account/Login">Login</a></li>
+                    <li><a href="~/Account/Register">Create Account</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h5>Get in Touch</h5>
+                <ul>
+                    <li><a href="mailto:@site.SupportEmail"><i class="fa-solid fa-envelope"></i>&nbsp; @site.SupportEmail</a></li>
+                    <li><a href="tel:@supportTel"><i class="fa-solid fa-phone"></i>&nbsp; @site.SupportPhone</a></li>
+                    <li><a href="#"><i class="fa-solid fa-location-dot"></i>&nbsp; Pune, Maharashtra</a></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <span>&copy; @DateTime.Now.Year Farm Mitra. All rights reserved.</span>
+            <span>Connecting Farmers. Empowering Agriculture.</span>
+        </div>
+    </div>
+</footer>
+
+<script src="~/js/main.js" asp-append-version="true"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

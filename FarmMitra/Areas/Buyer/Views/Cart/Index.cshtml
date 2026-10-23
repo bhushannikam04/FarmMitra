@@ -1,0 +1,105 @@
+@model CartViewModel
+@{
+    ViewData["Title"] = "My Cart";
+    var toFree = Model.FreeDeliveryAbove - Model.Subtotal;
+}
+
+<style>
+    .cart-layout { display: grid; grid-template-columns: 1.7fr 1fr; gap: 24px; align-items: start; }
+    .cart-line { display: flex; align-items: center; gap: 16px; padding: 18px 0; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+    .cart-line:first-child { padding-top: 0; }
+    .cart-line:last-child { border-bottom: none; padding-bottom: 0; }
+    .cart-img { width: 76px; height: 76px; border-radius: 12px; object-fit: cover; background: var(--primary-tint); flex-shrink: 0; }
+    .cart-info { flex: 1; min-width: 160px; }
+    .cart-name { font-family: var(--font-display); font-weight: 600; font-size: 1rem; display: block; }
+    .cart-name:hover { color: var(--primary); }
+    .cart-price { font-size: 0.86rem; color: var(--text-light); }
+    .cart-issue { display: block; margin-top: 6px; font-size: 0.8rem; font-weight: 600; color: var(--danger); }
+    .cart-line.has-issue .cart-img { outline: 2px solid var(--danger); }
+    .qty-stepper { display: inline-flex; align-items: center; border: 1.5px solid var(--border); border-radius: 999px; overflow: hidden; }
+    .qty-stepper button { width: 36px; height: 38px; font-size: 1rem; }
+    .qty-stepper button:hover:not(:disabled) { background: var(--primary-tint); }
+    .qty-stepper button:disabled { opacity: 0.35; cursor: not-allowed; }
+    .qty-stepper span { min-width: 34px; text-align: center; font-weight: 600; }
+    .cart-total { min-width: 90px; text-align: right; font-family: var(--font-display); font-weight: 700; }
+    .cart-remove { width: 36px; height: 36px; border-radius: 10px; color: var(--text-muted); }
+    .cart-remove:hover { background: var(--danger-tint); color: var(--danger); }
+    .sum-row { display: flex; justify-content: space-between; padding: 8px 0; font-size: 0.94rem; color: var(--text-light); }
+    .sum-row strong { color: var(--text-dark); }
+    .sum-total { border-top: 1px solid var(--border); margin-top: 8px; padding-top: 16px; font-size: 1.1rem; }
+    .sum-total strong { font-family: var(--font-display); font-size: 1.3rem; color: var(--primary-dark); }
+    @@media (max-width: 992px) { .cart-layout { grid-template-columns: 1fr; } }
+</style>
+
+<div class="dash-content-head">
+    <div>
+        <h1>My Cart</h1>
+        <p>@(Model.Lines.Count == 0 ? "Your cart is empty." : Model.Lines.Count + (Model.Lines.Count == 1 ? " item" : " items") + " ready for checkout.")</p>
+    </div>
+    <a asp-area="" asp-controller="Marketplace" asp-action="Index" class="btn btn-outline"><i class="fa-solid fa-arrow-left"></i> Continue shopping</a>
+</div>
+
+@if (!Model.Lines.Any())
+{
+    <div class="dash-panel" style="text-align:center; padding:56px 24px;">
+        <div class="feature-icon" style="margin:0 auto 18px; width:68px; height:68px; font-size:1.6rem; border-radius:50%;"><i class="fa-solid fa-cart-shopping"></i></div>
+        <h2 style="font-size:1.3rem; margin-bottom:8px;">Nothing here yet</h2>
+        <p class="section-sub" style="margin:0 auto 24px;">Browse the marketplace and add fresh produce straight from the farmers.</p>
+        <a asp-area="" asp-controller="Marketplace" asp-action="Index" class="btn btn-primary">Explore Marketplace</a>
+    </div>
+}
+else
+{
+    <div class="cart-layout">
+        <div class="dash-panel">
+            @foreach (var l in Model.Lines)
+            {
+                <div class="cart-line @(l.Issue != null ? "has-issue" : "")">
+                    <img class="cart-img" src="@(string.IsNullOrEmpty(l.ImagePath) ? "/images/placeholder.svg" : l.ImagePath)" alt="" onerror="this.onerror=null;this.src='/images/placeholder.svg';" />
+
+                    <div class="cart-info">
+                        <a asp-area="" asp-controller="Marketplace" asp-action="Details" asp-route-id="@l.ProductId" class="cart-name">@l.Name</a>
+                        <span class="cell-sub">@l.FarmerName</span>
+                        <span class="cart-price">₹@l.UnitPrice.ToString("N0") / @l.Unit</span>
+                        @if (l.Issue != null)
+                        {
+                            <span class="cart-issue"><i class="fa-solid fa-triangle-exclamation"></i> @l.Issue</span>
+                        }
+                    </div>
+
+                    <form asp-area="Buyer" asp-controller="Cart" asp-action="Update" asp-route-id="@l.CartItemId" method="post" class="qty-stepper">
+                        <button type="submit" name="quantity" value="@(l.Quantity - 1)" disabled="@(l.Quantity <= 1)" aria-label="Decrease quantity">-</button>
+                        <span>@l.Quantity</span>
+                        <button type="submit" name="quantity" value="@(l.Quantity + 1)" disabled="@(l.Quantity >= l.Stock)" aria-label="Increase quantity">+</button>
+                    </form>
+
+                    <div class="cart-total">₹@l.LineTotal.ToString("N0")</div>
+
+                    <form asp-area="Buyer" asp-controller="Cart" asp-action="Remove" asp-route-id="@l.CartItemId" method="post">
+                        <button type="submit" class="cart-remove" title="Remove" aria-label="Remove @l.Name"><i class="fa-solid fa-trash"></i></button>
+                    </form>
+                </div>
+            }
+        </div>
+
+        <aside class="dash-panel">
+            <div class="dash-panel-head"><h2>Order Summary</h2></div>
+            <div class="sum-row"><span>Subtotal</span><strong>₹@Model.Subtotal.ToString("N0")</strong></div>
+            <div class="sum-row"><span>Delivery</span><strong>@(Model.DeliveryFee == 0 ? "Free" : "₹" + Model.DeliveryFee.ToString("N0"))</strong></div>
+            @if (Model.DeliveryFee > 0)
+            {
+                <div class="hint" style="margin:4px 0 6px;">Add ₹@toFree.ToString("N0") more for free delivery.</div>
+            }
+            <div class="sum-row sum-total"><span>Total</span><strong>₹@Model.Total.ToString("N0")</strong></div>
+
+            @if (Model.HasIssues)
+            {
+                <div class="alert alert-warning" style="margin:18px 0 0;"><i class="fa-solid fa-triangle-exclamation"></i> Fix or remove the highlighted items to continue.</div>
+            }
+            else
+            {
+                <a asp-area="Buyer" asp-controller="Cart" asp-action="Checkout" class="btn btn-primary btn-block" style="margin-top:20px;">Proceed to Checkout</a>
+            }
+        </aside>
+    </div>
+}

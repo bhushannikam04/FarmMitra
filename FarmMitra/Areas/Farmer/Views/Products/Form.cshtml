@@ -1,0 +1,185 @@
+@model ProductFormViewModel
+@{
+    var isEdit = Model.Id > 0;
+    ViewData["Title"] = isEdit ? "Edit Product" : "Add Product";
+    var hasImage = !string.IsNullOrEmpty(Model.ExistingImagePath);
+}
+
+<style>
+    .pf-layout { display: grid; grid-template-columns: 1.5fr 1fr; gap: 24px; align-items: start; }
+    .upload-box { display: flex; align-items: center; justify-content: center; text-align: center; min-height: 240px; border: 2px dashed var(--border); border-radius: var(--radius-md); background: var(--background); cursor: pointer; overflow: hidden; position: relative; transition: border-color 0.18s var(--ease), background 0.18s var(--ease); }
+    .upload-box:hover { border-color: var(--primary-light); background: var(--primary-tint); }
+    input.sr-only:focus-visible + .upload-box { outline: 2px solid var(--primary-light); outline-offset: 2px; }
+    .upload-box img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+    .upload-box img[hidden] { display: none; }
+    .upload-hint { padding: 24px; color: var(--text-light); font-size: 0.86rem; }
+    .upload-hint i { font-size: 2rem; color: var(--primary-light); margin-bottom: 10px; display: block; }
+    .upload-hint strong { display: block; color: var(--text-dark); margin-bottom: 4px; }
+    .pf-tips li { display: flex; gap: 10px; font-size: 0.86rem; color: var(--text-light); margin-bottom: 10px; }
+    .pf-tips i { color: var(--primary); margin-top: 3px; }
+    @@media (max-width: 992px) { .pf-layout { grid-template-columns: 1fr; } }
+</style>
+
+<div class="dash-content-head">
+    <div>
+        <h1>@ViewData["Title"]</h1>
+        <p>@(isEdit ? "Update your listing. Changes show up in the marketplace right away." : "Fill in the details and your product goes live in the marketplace.")</p>
+    </div>
+    <a asp-area="Farmer" asp-controller="Products" asp-action="Index" class="btn btn-outline"><i class="fa-solid fa-arrow-left"></i> Back to products</a>
+</div>
+
+<form method="post" enctype="multipart/form-data" asp-area="Farmer" asp-controller="Products"
+      asp-action="@(isEdit ? "Edit" : "Create")" asp-route-id="@(isEdit ? Model.Id : (int?)null)" novalidate>
+
+    <input type="hidden" asp-for="Id" />
+    <input type="hidden" asp-for="ExistingImagePath" />
+
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="margin-bottom:20px;"></div>
+
+    <div class="pf-layout">
+        <div class="dash-panel">
+            <div class="field">
+                <label asp-for="Name">Product Name</label>
+                <input asp-for="Name" class="input" placeholder="e.g. Fresh Nashik Onion" maxlength="100" />
+                <span asp-validation-for="Name" class="field-error"></span>
+            </div>
+
+            <div class="form-row">
+                <div class="field">
+                    <label asp-for="Category">Category</label>
+                    <select asp-for="Category" class="input">
+                        <option value="">Select category</option>
+                        @if (!string.IsNullOrEmpty(Model.Category) && !ProductOptions.Categories.Contains(Model.Category))
+                        {
+                            <option value="@Model.Category" selected>@Model.Category</option>
+                        }
+                        @foreach (var c in ProductOptions.Categories)
+                        {
+                            <option value="@c">@c</option>
+                        }
+                    </select>
+                    <span asp-validation-for="Category" class="field-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="Unit">Unit</label>
+                    <select asp-for="Unit" class="input">
+                        @foreach (var u in ProductOptions.Units)
+                        {
+                            <option value="@u">@u</option>
+                        }
+                    </select>
+                    <span asp-validation-for="Unit" class="field-error"></span>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="field">
+                    <label asp-for="Price">Price per unit (₹)</label>
+                    <input asp-for="Price" type="number" step="0.01" min="0" class="input" placeholder="e.g. 2500" />
+                    <span asp-validation-for="Price" class="field-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="Quantity">Available Quantity</label>
+                    <input asp-for="Quantity" type="number" min="0" class="input" placeholder="e.g. 120" />
+                    <div class="hint">Set to 0 to mark the product as out of stock.</div>
+                    <span asp-validation-for="Quantity" class="field-error"></span>
+                </div>
+            </div>
+
+            <div class="field">
+                <label asp-for="Location">Location</label>
+                <input asp-for="Location" class="input" placeholder="e.g. Nashik, Maharashtra" maxlength="100" />
+                <span asp-validation-for="Location" class="field-error"></span>
+            </div>
+
+            <div class="dash-panel-head" style="margin:6px 0 10px;"><h2>Specifications <small style="font-weight:400;color:var(--text-light);font-size:.8rem;">(optional, shown when buyers hover over the photo)</small></h2></div>
+            <div class="form-row">
+                <div class="field">
+                    <label asp-for="Grade">Grade</label>
+                    <input asp-for="Grade" class="input" placeholder="e.g. A, export quality" maxlength="40" />
+                </div>
+                <div class="field">
+                    <label asp-for="Size">Size</label>
+                    <input asp-for="Size" class="input" placeholder="e.g. 55-65 mm" maxlength="40" />
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="field">
+                    <label asp-for="Harvested">Harvested</label>
+                    <input asp-for="Harvested" class="input" placeholder="e.g. This week" maxlength="40" />
+                </div>
+                <div class="field">
+                    <label asp-for="ShelfLife">Shelf life</label>
+                    <input asp-for="ShelfLife" class="input" placeholder="e.g. 30-45 days" maxlength="40" />
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="field">
+                    <label asp-for="MinOrder">Minimum order</label>
+                    <input asp-for="MinOrder" class="input" placeholder="e.g. 5 quintal" maxlength="40" />
+                </div>
+                <div class="field">
+                    <label asp-for="Packing">Packing</label>
+                    <input asp-for="Packing" class="input" placeholder="e.g. 50 kg jute bags" maxlength="60" />
+                </div>
+            </div>
+
+            <div class="field">
+                <label asp-for="Description">Description</label>
+                <textarea asp-for="Description" class="input" rows="5" maxlength="1000" placeholder="Tell buyers about the quality, harvest date and how it is graded..."></textarea>
+                <span asp-validation-for="Description" class="field-error"></span>
+            </div>
+
+            <div class="flex gap-12">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fa-solid @(isEdit ? "fa-floppy-disk" : "fa-circle-plus")"></i> @(isEdit ? "Save Changes" : "Add Product")
+                </button>
+                <a asp-area="Farmer" asp-controller="Products" asp-action="Index" class="btn btn-outline">Cancel</a>
+            </div>
+        </div>
+
+        <div>
+            <div class="dash-panel">
+                <div class="dash-panel-head"><h2>Product Image</h2></div>
+                <input type="file" asp-for="Image" id="Image" accept="image/png,image/jpeg,image/webp" class="sr-only" />
+                <label for="Image" class="upload-box">
+                    <img id="preview" alt="Image preview" src="@(hasImage ? Model.ExistingImagePath : "")" @(hasImage ? "" : "hidden") />
+                    <span class="upload-hint" id="upload-hint" style="@(hasImage ? "display:none;" : "")">
+                        <i class="fa-solid fa-cloud-arrow-up"></i>
+                        <strong>Click to upload</strong>
+                        JPG, PNG or WebP, up to 3 MB
+                    </span>
+                </label>
+                <span asp-validation-for="Image" class="field-error"></span>
+                @if (isEdit)
+                {
+                    <div class="hint" style="margin-top:10px;">Choose a new file only if you want to replace the current image.</div>
+                }
+            </div>
+
+            <div class="dash-panel" style="margin-top:24px;">
+                <div class="dash-panel-head"><h2>Tips for a great listing</h2></div>
+                <ul class="pf-tips">
+                    <li><i class="fa-solid fa-camera"></i> Use a bright, clear photo of the actual produce.</li>
+                    <li><i class="fa-solid fa-indian-rupee-sign"></i> Check current prices in the marketplace before you set yours.</li>
+                    <li><i class="fa-solid fa-boxes-stacked"></i> Keep the quantity up to date so buyers never order stock you don't have.</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</form>
+
+@section Scripts {
+    <script>
+        const input = document.getElementById('Image');
+        const preview = document.getElementById('preview');
+        const hint = document.getElementById('upload-hint');
+        input.addEventListener('change', () => {
+            const file = input.files && input.files[0];
+            if (!file) return;
+            preview.src = URL.createObjectURL(file);
+            preview.hidden = false;
+            hint.style.display = 'none';
+        });
+    </script>
+}

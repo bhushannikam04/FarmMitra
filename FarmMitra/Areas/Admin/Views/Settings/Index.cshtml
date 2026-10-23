@@ -1,0 +1,53 @@
+@model PlatformSettingsViewModel
+@{ ViewData["Title"] = "Platform Settings"; }
+
+<div class="account-grid">
+    <div class="dash-panel">
+        <div class="dash-panel-head"><h2>Platform Settings</h2></div>
+        <form asp-action="Index" method="post">
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger" style="margin-bottom:18px;"></div>
+
+            <div class="account-section-title">Delivery &amp; pricing</div>
+            <div class="form-row">
+                <div class="field">
+                    <label asp-for="FlatDeliveryFee">Flat Delivery Fee (₹)</label>
+                    <input asp-for="FlatDeliveryFee" class="input" type="number" step="1" min="0" />
+                    <span asp-validation-for="FlatDeliveryFee" class="field-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="FreeDeliveryAbove">Free Delivery Above (₹)</label>
+                    <input asp-for="FreeDeliveryAbove" class="input" type="number" step="1" min="0" />
+                    <span asp-validation-for="FreeDeliveryAbove" class="field-error"></span>
+                </div>
+            </div>
+            <div class="settings-preview">
+                Orders below ₹@Model.FreeDeliveryAbove.ToString("N0") pay ₹@Model.FlatDeliveryFee.ToString("N0") delivery. Orders at or above it ship free.
+            </div>
+
+            <div class="account-section-title">Support contact (shown in the website footer)</div>
+            <div class="form-row">
+                <div class="field">
+                    <label asp-for="SupportEmail">Support Email</label>
+                    <input asp-for="SupportEmail" class="input" type="email" />
+                    <span asp-validation-for="SupportEmail" class="field-error"></span>
+                </div>
+                <div class="field">
+                    <label asp-for="SupportPhone">Support Phone</label>
+                    <input asp-for="SupportPhone" class="input" />
+                    <span asp-validation-for="SupportPhone" class="field-error"></span>
+                </div>
+            </div>
+
+            <div class="account-actions">
+                <button type="submit" class="btn btn-primary"><i class="fa-solid fa-floppy-disk"></i> Save Settings</button>
+            </div>
+        </form>
+    </div>
+    <aside class="dash-panel">
+        <div class="dash-panel-head"><h2>Good to know</h2></div>
+        <ul style="list-style:disc; padding-left:18px; color:var(--text-light); font-size:0.9rem; display:grid; gap:8px;">
+            <li>Orders already placed keep the delivery fee they were charged.</li>
+            <li>Your own login details are under <a asp-area="Admin" asp-controller="Profile" asp-action="Index">Profile</a>.</li>
+        </ul>
+    </aside>
+</div>

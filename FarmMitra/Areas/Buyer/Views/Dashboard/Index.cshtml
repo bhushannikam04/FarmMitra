@@ -1,0 +1,76 @@
+@model BuyerDashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="dash-content-head">
+    <div>
+        <h1>Hi @Model.FirstName, good to see you</h1>
+        <p>Here's a quick look at your cart and orders.</p>
+    </div>
+    <a asp-area="" asp-controller="Marketplace" asp-action="Index" class="btn btn-primary"><i class="fa-solid fa-basket-shopping"></i> Browse Marketplace</a>
+</div>
+
+<div class="grid grid-4 dash-stats mt-24">
+    <a asp-area="Buyer" asp-controller="Cart" asp-action="Index" class="dash-card">
+        <div class="dash-card-top"><div class="dash-card-icon" style="background:var(--primary-tint); color:var(--primary);"><i class="fa-solid fa-cart-shopping"></i></div></div>
+        <div><span class="dash-num">@Model.CartItems</span><span class="dash-label">Cart Items</span></div>
+    </a>
+    <a asp-area="Buyer" asp-controller="Orders" asp-action="Index" class="dash-card">
+        <div class="dash-card-top"><div class="dash-card-icon" style="background:var(--info-tint); color:var(--info);"><i class="fa-solid fa-truck"></i></div></div>
+        <div><span class="dash-num">@Model.ActiveOrders</span><span class="dash-label">Active Orders</span></div>
+    </a>
+    <a asp-area="Buyer" asp-controller="Orders" asp-action="Index" asp-route-status="Delivered" class="dash-card">
+        <div class="dash-card-top"><div class="dash-card-icon" style="background:var(--success-tint); color:var(--success);"><i class="fa-solid fa-box-open"></i></div></div>
+        <div><span class="dash-num">@Model.DeliveredOrders</span><span class="dash-label">Delivered Orders</span></div>
+    </a>
+    <div class="dash-card">
+        <div class="dash-card-top"><div class="dash-card-icon" style="background:var(--accent-tint); color:var(--accent-dark);"><i class="fa-solid fa-indian-rupee-sign"></i></div></div>
+        <div><span class="dash-num">₹@Model.TotalPurchases.ToString("N0")</span><span class="dash-label">Total Purchases</span></div>
+    </div>
+</div>
+
+<div class="dash-panel mt-24">
+    <div class="dash-panel-head"><h2>Active Orders</h2><a asp-area="Buyer" asp-controller="Orders" asp-action="Index">View All</a></div>
+    <div class="table-scroll">
+        <table class="data-table">
+            <thead><tr><th>Order</th><th>Items</th><th>Date</th><th>Total</th><th>Status</th><th></th></tr></thead>
+            <tbody>
+                @foreach (var o in Model.ActiveOrderRows)
+                {
+                    <tr>
+                        <td>#FM-@o.Id</td>
+                        <td>@o.FirstProduct@(o.ItemCount > 1 ? " +" + (o.ItemCount - 1) + " more" : "")</td>
+                        <td>@o.OrderDate.ToString("dd MMM yyyy")</td>
+                        <td>₹@o.Total.ToString("N0")</td>
+                        <td><span class="badge @BadgeHelper.Css(o.Status)">@o.Status</span></td>
+                        <td><a asp-area="Buyer" asp-controller="Orders" asp-action="Details" asp-route-id="@o.Id" class="btn btn-outline btn-sm">Track</a></td>
+                    </tr>
+                }
+                @if (!Model.ActiveOrderRows.Any())
+                {
+                    <tr class="empty-row"><td colspan="6">No active orders. <a asp-area="" asp-controller="Marketplace" asp-action="Index" style="color:var(--primary); font-weight:600;">Find something fresh</a>.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="section-head-row mt-32" style="margin-bottom:24px;">
+    <div>
+        <h2 style="font-family:var(--font-display); font-size:1.2rem;">Recommended Agricultural Products</h2>
+        <p class="section-sub" style="margin-top:4px;">Fresh listings, with categories you've bought before first.</p>
+    </div>
+    <a asp-area="" asp-controller="Marketplace" asp-action="Index" class="btn btn-outline">View All Products</a>
+</div>
+
+<div class="grid grid-3">
+    @foreach (var p in Model.Recommended)
+    {
+        <partial name="_ProductCard" model="p" />
+    }
+    @if (!Model.Recommended.Any())
+    {
+        <div class="alert alert-info"><i class="fa-solid fa-circle-info"></i> No products are listed right now.</div>
+    }
+</div>

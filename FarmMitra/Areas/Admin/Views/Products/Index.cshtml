@@ -1,0 +1,81 @@
+@model PagedResult<Product>
+@{
+    ViewData["Title"] = "Products";
+    ViewData["Placeholder"] = "Search product, category or farmer...";
+    ViewData["Statuses"] = new[] { "Available", "Pending", "OutOfStock" };
+    var returnUrl = Context.Request.Path + Context.Request.QueryString;
+}
+
+<div class="dash-content-head">
+    <div>
+        <h1>Products</h1>
+        <p>Moderate what is listed in the marketplace.</p>
+    </div>
+</div>
+
+<div class="dash-panel">
+    <partial name="_ListToolbar" model="(IPaged)Model" />
+
+    <div class="table-scroll">
+        <table class="data-table">
+            <thead>
+                <tr><th>Product</th><th>Farmer</th><th>Category</th><th>Price</th><th>Quantity</th><th>Status</th><th>Listed</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var p in Model.Items)
+                {
+                    <tr>
+                        <td>
+                            <div class="table-product">
+                                <img src="@(string.IsNullOrEmpty(p.ImagePath) ? "/images/placeholder.svg" : p.ImagePath)" alt="" onerror="this.onerror=null;this.src='/images/placeholder.svg';" />
+                                @p.Name
+                            </div>
+                        </td>
+                        <td>@p.Farmer?.FullName</td>
+                        <td>@p.Category</td>
+                        <td>₹@p.Price.ToString("N0") / @p.Unit</td>
+                        <td>@p.Quantity @p.Unit</td>
+                        <td><span class="badge @BadgeHelper.Css(p.Status)">@BadgeHelper.Label(p.Status)</span></td>
+                        <td>@p.CreatedAt.ToString("dd MMM yyyy")</td>
+                        <td>
+                            <div class="table-actions">
+                                <a asp-area="" asp-controller="Marketplace" asp-action="Details" asp-route-id="@p.Id" target="_blank"
+                                   class="btn-icon" title="View in marketplace" style="width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:var(--background);color:var(--text-light);font-size:0.82rem;">
+                                    <i class="fa-solid fa-eye"></i>
+                                </a>
+                                @if (p.Status == "Pending")
+                                {
+                                    <form asp-area="Admin" asp-controller="Products" asp-action="SetStatus" asp-route-id="@p.Id" method="post">
+                                        <input type="hidden" name="status" value="Available" />
+                                        <input type="hidden" name="returnUrl" value="@returnUrl" />
+                                        <button type="submit" title="Approve listing"><i class="fa-solid fa-check"></i></button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <form asp-area="Admin" asp-controller="Products" asp-action="SetStatus" asp-route-id="@p.Id" method="post"
+                                          data-confirm="It will be hidden from the marketplace until you approve it again." data-confirm-title="Hide this product?" data-confirm-button="Hide">
+                                        <input type="hidden" name="status" value="Pending" />
+                                        <input type="hidden" name="returnUrl" value="@returnUrl" />
+                                        <button type="submit" title="Hide from marketplace"><i class="fa-solid fa-eye-slash"></i></button>
+                                    </form>
+                                }
+                                <form asp-area="Admin" asp-controller="Products" asp-action="Delete" asp-route-id="@p.Id" method="post"
+                                      data-confirm="&quot;@p.Name&quot; will be permanently deleted." data-confirm-title="Delete product?" data-confirm-button="Delete" data-danger="true">
+                                    <input type="hidden" name="returnUrl" value="@returnUrl" />
+                                    <button type="submit" class="danger" title="Delete"><i class="fa-solid fa-trash"></i></button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                @if (!Model.Items.Any())
+                {
+                    <tr class="empty-row"><td colspan="8">No products found.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <partial name="_Pager" model="(IPaged)Model" />
+</div>

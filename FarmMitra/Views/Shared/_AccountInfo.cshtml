@@ -1,0 +1,20 @@
+@model ProfileViewModel
+@{
+    var initial = string.IsNullOrWhiteSpace(Model.FullName) ? "?" : Model.FullName.Trim().Substring(0, 1).ToUpper();
+}
+<div class="dash-panel info-card">
+    <div class="avatar-lg">
+        @if (!string.IsNullOrEmpty(Model.ProfileImagePath)) { <img src="@Model.ProfileImagePath" alt="@Model.FullName" /> }
+        else { <text>@initial</text> }
+    </div>
+    <h3>@Model.FullName</h3>
+    <span class="role-pill">@Model.Role</span>
+    <div class="info-list">
+        <div><small>Email</small>@Model.Email</div>
+        <div><small>Member since</small>@Model.MemberSince.ToLocalTime().ToString("dd MMM yyyy")</div>
+        @if (!string.IsNullOrEmpty(Model.ApprovalStatus))
+        {
+            <div><small>Account status</small>@Model.ApprovalStatus</div>
+        }
+    </div>
+</div>

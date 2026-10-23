@@ -1,0 +1,14 @@
+@model BarChartModel
+@{
+    var max = Model.Bars.Count == 0 ? 0 : Model.Bars.Max(b => b.Value);
+}
+<div class="simple-bar-chart">
+    @foreach (var b in Model.Bars)
+    {
+        var h = max <= 0 ? 4 : Math.Max(4, (int)Math.Round((double)(b.Value / max * 100)));
+        <div class="bar-col" title="@(b.Label + ": " + Model.Prefix + b.Value.ToString("N0"))">
+            <div class="bar" style="height:@(h)%; background:@Model.Color;"></div>
+            <span class="bar-label">@b.Label</span>
+        </div>
+    }
+</div>

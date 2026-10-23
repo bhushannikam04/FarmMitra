@@ -1,0 +1,142 @@
+@model FarmMitra.ViewModels.ProductDetailsViewModel
+@{
+    var p = Model.Product;
+    var farmer = p.Farmer;
+    ViewData["Title"] = p.Name;
+    var soldOut = p.Quantity <= 0 || p.Status == "OutOfStock";
+    var img = string.IsNullOrEmpty(p.ImagePath) ? "/images/placeholder.svg" : p.ImagePath;
+    var initial = string.IsNullOrEmpty(farmer?.FullName) ? "F" : farmer!.FullName.Substring(0, 1);
+}
+
+<style>
+    .pd-layout { display: grid; grid-template-columns: 1.1fr 1fr; gap: 48px; align-items: start; }
+    .pd-image { border-radius: var(--radius-lg); overflow: hidden; background: var(--primary-tint); aspect-ratio: 4 / 3; }
+    .pd-image img { width: 100%; height: 100%; object-fit: cover; }
+    .pd-title { font-size: clamp(1.7rem, 3vw, 2.3rem); margin: 12px 0 8px; }
+    .pd-price { font-family: var(--font-display); font-size: 1.9rem; font-weight: 700; color: var(--primary-dark); }
+    .pd-price span { font-family: var(--font-body); font-size: 0.95rem; font-weight: 400; color: var(--text-light); }
+    .pd-facts { margin: 22px 0; display: grid; gap: 12px; }
+    .pd-facts li { display: flex; align-items: center; gap: 12px; font-size: 0.95rem; color: var(--text-light); }
+    .pd-facts i { width: 34px; height: 34px; border-radius: 10px; background: var(--primary-tint); color: var(--primary); display: flex; align-items: center; justify-content: center; font-size: 0.85rem; }
+    .pd-facts strong { color: var(--text-dark); }
+    .pd-desc { color: var(--text-light); line-height: 1.75; margin-bottom: 24px; }
+    .qty-selector { display: inline-flex; align-items: center; border: 1.5px solid var(--border); border-radius: var(--radius-pill); overflow: hidden; }
+    .qty-selector button { width: 42px; height: 46px; font-size: 1.1rem; color: var(--text-dark); }
+    .qty-selector button:hover { background: var(--primary-tint); }
+    .qty-selector input { width: 60px; text-align: center; border: none; font-weight: 600; font-size: 1rem; -moz-appearance: textfield; }
+    .qty-selector input::-webkit-outer-spin-button, .qty-selector input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    .pd-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 22px; }
+    .pd-farmer { display: flex; align-items: center; gap: 20px; background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 24px; margin-top: 56px; flex-wrap: wrap; }
+    .pd-farmer-avatar { width: 64px; height: 64px; border-radius: 50%; background: var(--primary); color: var(--white); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; flex-shrink: 0; }
+    .pd-farmer-info { flex: 1; min-width: 220px; }
+    .pd-farmer-info h3 { font-size: 1.1rem; margin-bottom: 4px; }
+    .pd-farmer-info p { color: var(--text-light); font-size: 0.9rem; }
+    @@media (max-width: 992px) { .pd-layout { grid-template-columns: 1fr; gap: 28px; } }
+</style>
+
+<section class="page-banner">
+    <div class="container">
+        <div class="breadcrumb">
+            <a href="~/">Home</a> / <a asp-controller="Marketplace" asp-action="Index">Marketplace</a> / @p.Name
+        </div>
+    </div>
+</section>
+
+<section>
+    <div class="container">
+        <div class="pd-layout">
+            <div class="pd-image">
+                <img src="@img" alt="@p.Name" onerror="this.onerror=null;this.src='/images/placeholder.svg';" />
+            </div>
+
+            <div>
+                <span class="badge @(soldOut ? "badge-danger" : "badge-success")">@(soldOut ? "Out of Stock" : "Available")</span>
+                <h1 class="pd-title">@p.Name</h1>
+                <div class="pd-price">₹@p.Price.ToString("N0") <span>/ @p.Unit</span></div>
+
+                <ul class="pd-facts">
+                    <li><i class="fa-solid fa-box"></i><span>Available: <strong>@p.Quantity @p.Unit</strong></span></li>
+                    <li><i class="fa-solid fa-user"></i><span>Farmer: <strong>@farmer?.FullName</strong></span></li>
+                    <li><i class="fa-solid fa-location-dot"></i><span>Location: <strong>@(p.Location ?? farmer?.City)</strong></span></li>
+                    <li><i class="fa-solid fa-tag"></i><span>Category: <strong>@p.Category</strong></span></li>
+                </ul>
+
+                <p class="pd-desc">@p.Description</p>
+
+                @if (soldOut)
+                {
+                    <div class="alert alert-warning"><i class="fa-solid fa-triangle-exclamation"></i> This product is currently out of stock. Check back soon.</div>
+                }
+                else if (User.IsInRole("Buyer"))
+                {
+                    <form method="post" asp-area="Buyer" asp-controller="Cart" asp-action="Add">
+                        <input type="hidden" name="productId" value="@p.Id" />
+                        <input type="hidden" name="returnUrl" value="@(Context.Request.Path + Context.Request.QueryString)" />
+                        <div class="qty-selector">
+                            <button type="button" id="qty-minus" aria-label="Decrease quantity">-</button>
+                            <input type="number" name="quantity" id="qty" value="1" min="1" max="@p.Quantity" aria-label="Quantity" />
+                            <button type="button" id="qty-plus" aria-label="Increase quantity">+</button>
+                        </div>
+                        <span style="margin-left:10px; font-size:0.9rem; color:var(--text-light);">@p.Unit</span>
+
+                        <div class="pd-actions">
+                            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-cart-plus"></i> Add to Cart</button>
+                            <button type="submit" name="buyNow" value="true" class="btn btn-accent">Buy Now</button>
+                            <button type="submit" asp-area="Buyer" asp-controller="Messages" asp-action="Start" class="btn btn-outline"><i class="fa-solid fa-comments"></i> Contact Farmer</button>
+                        </div>
+                    </form>
+                }
+                else if (User.Identity?.IsAuthenticated != true)
+                {
+                    <div class="pd-actions">
+                        <a href="~/Account/Login?returnUrl=@Uri.EscapeDataString(Context.Request.Path + Context.Request.QueryString)" class="btn btn-primary"><i class="fa-solid fa-right-to-bracket"></i> Log in to buy</a>
+                        <a href="~/Account/Login?returnUrl=@Uri.EscapeDataString(Context.Request.Path + Context.Request.QueryString)" class="btn btn-outline"><i class="fa-solid fa-comments"></i> Contact Farmer</a>
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-info"><i class="fa-solid fa-circle-info"></i> Only buyer accounts can place orders.</div>
+                }
+            </div>
+        </div>
+
+        <div class="pd-farmer">
+            <div class="pd-farmer-avatar">@initial</div>
+            <div class="pd-farmer-info">
+                <h3>@farmer?.FullName</h3>
+                <p><i class="fa-solid fa-location-dot"></i> @farmer?.City, @farmer?.State</p>
+                <p>Grows: @farmer?.CropsGrown</p>
+            </div>
+            <div>
+                <strong style="font-family:var(--font-display); font-size:1.4rem;">@farmer?.ExperienceYears</strong>
+                <div style="font-size:0.82rem; color:var(--text-light);">years experience</div>
+            </div>
+        </div>
+
+        @if (Model.Related.Any())
+        {
+            <h2 style="font-size:1.4rem; margin:56px 0 24px;">More in @p.Category</h2>
+            <div class="grid grid-3">
+                @foreach (var r in Model.Related)
+                {
+                    <partial name="_ProductCard" model="r" />
+                }
+            </div>
+        }
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        const qty = document.getElementById('qty');
+        if (qty) {
+            const max = parseInt(qty.max, 10) || 1;
+            document.getElementById('qty-minus').addEventListener('click', () => {
+                qty.value = Math.max(1, (parseInt(qty.value, 10) || 1) - 1);
+            });
+            document.getElementById('qty-plus').addEventListener('click', () => {
+                qty.value = Math.min(max, (parseInt(qty.value, 10) || 1) + 1);
+            });
+        }
+    </script>
+}

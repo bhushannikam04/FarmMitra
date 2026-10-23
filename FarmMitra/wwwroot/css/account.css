@@ -1,0 +1,37 @@
+/* Profile & settings pages */
+.account-tabs { display: flex; gap: 6px; border-bottom: 1px solid var(--border); margin-bottom: 24px; flex-wrap: wrap; }
+.account-tabs a { padding: 11px 18px; font-weight: 600; font-size: 0.92rem; color: var(--text-light); border-bottom: 3px solid transparent; margin-bottom: -1px; display: inline-flex; gap: 8px; align-items: center; }
+.account-tabs a:hover { color: var(--primary); }
+.account-tabs a.active { color: var(--primary); border-bottom-color: var(--primary); }
+
+.account-grid { display: grid; grid-template-columns: minmax(0, 1.8fr) minmax(0, 1fr); gap: 24px; align-items: start; }
+.account-section-title { font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-light); margin: 22px 0 12px; }
+.account-section-title:first-child { margin-top: 0; }
+.account-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 8px; flex-wrap: wrap; }
+
+.info-card { text-align: center; }
+.avatar-lg { width: 84px; height: 84px; border-radius: 50%; background: var(--primary); color: #fff; font-size: 2rem; font-weight: 700; display: flex; align-items: center; justify-content: center; margin: 4px auto 14px; }
+.info-card h3 { font-size: 1.1rem; margin-bottom: 4px; }
+.role-pill { display: inline-block; padding: 3px 12px; border-radius: 999px; background: var(--primary-tint); color: var(--primary); font-size: 0.78rem; font-weight: 700; }
+.info-list { margin-top: 18px; text-align: left; display: grid; gap: 12px; }
+.info-list div { display: flex; flex-direction: column; gap: 2px; font-size: 0.9rem; padding-top: 12px; border-top: 1px solid var(--border); word-break: break-word; }
+.info-list small { color: var(--text-light); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+.input[readonly] { background: var(--background); color: var(--text-light); cursor: not-allowed; }
+.pw-hint { color: var(--text-light); font-size: 0.82rem; margin-top: 6px; }
+.settings-preview { background: var(--primary-tint); border-radius: var(--radius-sm); padding: 14px 16px; font-size: 0.9rem; color: var(--primary); margin: 4px 0 8px; }
+
+@media (max-width: 900px) { .account-grid { grid-template-columns: 1fr; } }
+
+/* Profile photo */
+.avatar-lg { overflow: hidden; }
+.avatar-lg img, .photo-preview img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.avatar-img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; display: block; }
+.photo-edit { display: flex; align-items: center; gap: 20px; flex-wrap: wrap; }
+.photo-preview { width: 96px; height: 96px; border-radius: 50%; overflow: hidden; background: var(--primary-tint); color: var(--primary); display: flex; align-items: center; justify-content: center; font-family: var(--font-display); font-weight: 700; font-size: 2.2rem; flex-shrink: 0; box-shadow: 0 0 0 4px #fff, 0 0 0 5px var(--border); }
+.photo-actions { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; position: relative; }
+.photo-input { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; }
+.photo-input:focus-visible + .photo-remove, .photo-actions label[for="Photo"]:focus-within { outline: 2px solid var(--primary); }
+.photo-remove { display: inline-flex; align-items: center; gap: 8px; font-size: .86rem; color: var(--text-light); cursor: pointer; }
+
+.cell-person .avatar-img { width: 38px; height: 38px; flex-shrink: 0; }

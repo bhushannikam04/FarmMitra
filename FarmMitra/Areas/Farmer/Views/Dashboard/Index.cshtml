@@ -1,0 +1,176 @@
+@model FarmerDashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+    var chart = new BarChartModel { Bars = Model.SalesChart, Color = "var(--primary-light)", Prefix = "₹" };
+}
+
+<div class="dash-content-head">
+    <div>
+        <h1>Welcome back, @Model.FirstName</h1>
+        <p>Here's what's happening with your farm today.</p>
+    </div>
+    <a asp-area="Farmer" asp-controller="Products" asp-action="Create" class="btn btn-primary"><i class="fa-solid fa-circle-plus"></i> Add Product</a>
+</div>
+
+<div class="grid grid-4 dash-stats mt-24">
+    <a asp-area="Farmer" asp-controller="Products" asp-action="Index" class="dash-card">
+        <div class="dash-card-top"><div class="dash-card-icon" style="background:var(--primary-tint); color:var(--primary);"><i class="fa-solid fa-box"></i></div></div>
+        <div><span class="dash-num">@Model.TotalProducts.ToString("N0")</span><span class="dash-label">Total Products</span></div>
+    </a>
+    <a asp-area="Farmer" asp-controller="Orders" asp-action="Index" asp-route-status="Pending" class="dash-card">
+        <div class="dash-card-top"><div class="dash-card-icon" style="background:var(--warning-tint); color:var(--warning);"><i class="fa-solid fa-hourglass-half"></i></div></div>
+        <div><span class="dash-num">@Model.PendingOrders.ToString("N0")</span><span class="dash-label">Pending Orders</span></div>
+    </a>
+    <a asp-area="Farmer" asp-controller="Orders" asp-action="Index" asp-route-status="Delivered" class="dash-card">
+        <div class="dash-card-top"><div class="dash-card-icon" style="background:var(--success-tint); color:var(--success);"><i class="fa-solid fa-circle-check"></i></div></div>
+        <div><span class="dash-num">@Model.CompletedOrders.ToString("N0")</span><span class="dash-label">Completed Orders</span></div>
+    </a>
+    <div class="dash-card">
+        <div class="dash-card-top"><div class="dash-card-icon" style="background:var(--accent-tint); color:var(--accent-dark);"><i class="fa-solid fa-indian-rupee-sign"></i></div></div>
+        <div><span class="dash-num">₹@Model.TotalSales.ToString("N0")</span><span class="dash-label">Total Sales</span></div>
+    </div>
+</div>
+
+<div class="dash-panel mt-24">
+    <div class="dash-panel-head"><h2>Weather</h2><a asp-area="Farmer" asp-controller="Weather" asp-action="Index">7-day forecast</a></div>
+    <div id="weather-body" class="wx-mini"><span class="cell-sub">Loading weather...</span></div>
+</div>
+
+<div class="grid grid-2 mt-24">
+    <div class="dash-panel">
+        <div class="dash-panel-head"><h2>Sales Overview</h2><span style="font-size:0.8rem; color:var(--text-light);">Last 6 months (₹)</span></div>
+        <partial name="_BarChart" model="chart" />
+    </div>
+
+    <div class="dash-panel">
+        <div class="dash-panel-head"><h2>Low Stock</h2><a asp-area="Farmer" asp-controller="Products" asp-action="Index">Manage</a></div>
+        @if (!Model.LowStock.Any())
+        {
+            <p style="color:var(--text-light); font-size:0.9rem;">All your products are well stocked.</p>
+        }
+        @foreach (var p in Model.LowStock)
+        {
+            <div class="approval-row">
+                <div class="table-product">
+                    <img src="@(string.IsNullOrEmpty(p.ImagePath) ? "/images/placeholder.svg" : p.ImagePath)" alt="" onerror="this.onerror=null;this.src='/images/placeholder.svg';" />
+                    <div>
+                        <div style="font-weight:600; font-size:0.9rem;">@p.Name</div>
+                        <span class="cell-sub">@p.Quantity @p.Unit left</span>
+                    </div>
+                </div>
+                <a asp-area="Farmer" asp-controller="Products" asp-action="Edit" asp-route-id="@p.Id" class="btn btn-secondary btn-sm">Restock</a>
+            </div>
+        }
+    </div>
+</div>
+
+<div class="dash-panel mt-24">
+    <div class="dash-panel-head"><h2>Recent Orders</h2><a asp-area="Farmer" asp-controller="Orders" asp-action="Index">View All</a></div>
+    <div class="table-scroll">
+        <table class="data-table">
+            <thead><tr><th>Order</th><th>Product</th><th>Buyer</th><th>Amount</th><th>Status</th></tr></thead>
+            <tbody>
+                @foreach (var o in Model.RecentOrders)
+                {
+                    <tr>
+                        <td>#FM-@o.OrderId</td>
+                        <td>
+                            <div class="table-product">
+                                <img src="@(string.IsNullOrEmpty(o.ProductImage) ? "/images/placeholder.svg" : o.ProductImage)" alt="" onerror="this.onerror=null;this.src='/images/placeholder.svg';" />
+                                @o.ProductName
+                            </div>
+                        </td>
+                        <td>@o.BuyerName</td>
+                        <td>₹@o.Amount.ToString("N0")</td>
+                        <td><span class="badge @BadgeHelper.Css(o.Status)">@o.Status</span></td>
+                    </tr>
+                }
+                @if (!Model.RecentOrders.Any())
+                {
+                    <tr class="empty-row"><td colspan="5">No orders yet. They'll appear here as soon as buyers order your products.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="dash-panel mt-24">
+    <div class="dash-panel-head"><h2>My Products</h2><a asp-area="Farmer" asp-controller="Products" asp-action="Index">Manage All</a></div>
+    <div class="table-scroll">
+        <table class="data-table">
+            <thead><tr><th>Product</th><th>Category</th><th>Price</th><th>Quantity</th><th>Status</th></tr></thead>
+            <tbody>
+                @foreach (var p in Model.RecentProducts)
+                {
+                    <tr>
+                        <td>
+                            <div class="table-product">
+                                <img src="@(string.IsNullOrEmpty(p.ImagePath) ? "/images/placeholder.svg" : p.ImagePath)" alt="" onerror="this.onerror=null;this.src='/images/placeholder.svg';" />
+                                @p.Name
+                            </div>
+                        </td>
+                        <td>@p.Category</td>
+                        <td>₹@p.Price.ToString("N0") / @p.Unit</td>
+                        <td>@p.Quantity @p.Unit</td>
+                        <td><span class="badge @BadgeHelper.Css(p.Status)">@BadgeHelper.Label(p.Status)</span></td>
+                    </tr>
+                }
+                @if (!Model.RecentProducts.Any())
+                {
+                    <tr class="empty-row"><td colspan="5">You haven't listed anything yet. <a asp-area="Farmer" asp-controller="Products" asp-action="Create" style="color:var(--primary); font-weight:600;">Add your first product</a>.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (async function () {
+            const box = document.getElementById('weather-body');
+
+            function el(tag, className, text) {
+                const e = document.createElement(tag);
+                if (className) e.className = className;
+                if (text !== undefined) e.textContent = text;
+                return e;
+            }
+
+            function metric(label, value) {
+                const m = el('div', 'weather-metric');
+                m.append(el('strong', '', value), el('span', '', label));
+                return m;
+            }
+
+            try {
+                const res = await fetch('@Url.Action("Summary", "Weather", new { area = "Farmer" })', { headers: { 'Accept': 'application/json' } });
+                const d = await res.json();
+                box.replaceChildren();
+
+                if (!d.ok) { box.append(el('span', 'cell-sub', d.message || 'Weather is unavailable right now.')); return; }
+
+                const now = el('div', 'wx-mini-now');
+                const icon = el('i', 'fa-solid ' + d.icon);
+                const info = el('div');
+                info.append(
+                    el('div', 'wx-mini-temp', d.temperature + '\u00B0C'),
+                    el('div', 'wx-mini-sub', d.description + ' in ' + d.place)
+                );
+                now.append(icon, info);
+
+                const metrics = el('div', 'wx-mini-metrics');
+                metrics.append(
+                    metric('High / Low', d.high + '\u00B0 / ' + d.low + '\u00B0'),
+                    metric('Humidity', d.humidity + '%'),
+                    metric('Rain today', d.rain + ' mm (' + d.rainChance + '%)'),
+                    metric('Wind', d.wind + ' km/h')
+                );
+
+                box.append(now, metrics);
+                if (d.tipTitle) box.append(el('div', 'wx-mini-tip ' + (d.tipLevel || ''), d.tipTitle));
+            } catch (e) {
+                box.replaceChildren(el('span', 'cell-sub', 'Weather is unavailable right now.'));
+            }
+        })();
+    </script>
+}

@@ -1,0 +1,45 @@
+@model PagedResult<ComplaintRow>
+@{
+    ViewData["Title"] = "Complaints";
+    ViewData["Placeholder"] = "Search subject, type or buyer...";
+    ViewData["Statuses"] = new[] { "Pending", "Under Review", "Resolved", "Rejected" };
+}
+
+<div class="dash-content-head">
+    <div>
+        <h1>Complaints</h1>
+        <p>Complaints buyers raised about orders for your products. Admins review and resolve them.</p>
+    </div>
+</div>
+
+<div class="dash-panel">
+    <partial name="_ListToolbar" model="(IPaged)Model" />
+
+    <div class="table-scroll">
+        <table class="data-table">
+            <thead>
+                <tr><th>ID</th><th>Subject</th><th>Buyer</th><th>Type</th><th>Order</th><th>Date</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var c in Model.Items)
+                {
+                    <tr>
+                        <td>#CMP-@c.Id</td>
+                        <td title="@c.Description">@c.Subject</td>
+                        <td>@c.UserName</td>
+                        <td>@c.Type</td>
+                        <td>@(c.OrderId.HasValue ? "#FM-" + c.OrderId : "-")</td>
+                        <td>@c.CreatedAt.ToString("dd MMM yyyy")</td>
+                        <td><span class="badge @BadgeHelper.Css(c.Status)">@c.Status</span></td>
+                    </tr>
+                }
+                @if (!Model.Items.Any())
+                {
+                    <tr class="empty-row"><td colspan="7">No complaints. Keep up the good work.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <partial name="_Pager" model="(IPaged)Model" />
+</div>

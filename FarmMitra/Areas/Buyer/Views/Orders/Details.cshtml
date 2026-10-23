@@ -1,0 +1,114 @@
+@model OrderDetailsViewModel
+@{
+    ViewData["Title"] = "Order #FM-" + Model.Id;
+    var steps = new[] { ("Pending", "fa-clock"), ("Confirmed", "fa-circle-check"), ("Shipped", "fa-truck"), ("Delivered", "fa-box-open") };
+    var current = Array.FindIndex(steps, s => s.Item1 == Model.Status);
+    var cancelled = Model.Status == "Cancelled";
+}
+
+<style>
+    .od-layout { display: grid; grid-template-columns: 1.6fr 1fr; gap: 24px; align-items: start; }
+    .track { display: flex; align-items: flex-start; margin: 4px 0; }
+    .track-step { flex: 1; text-align: center; position: relative; }
+    .track-step::before { content: ""; position: absolute; top: 19px; left: -50%; width: 100%; height: 3px; background: var(--border); z-index: 0; }
+    .track-step:first-child::before { display: none; }
+    .track-dot { width: 40px; height: 40px; border-radius: 50%; background: var(--white); border: 3px solid var(--border); display: flex; align-items: center; justify-content: center; margin: 0 auto 10px; position: relative; z-index: 1; color: var(--text-muted); font-size: 0.9rem; }
+    .track-step.done .track-dot { background: var(--primary); border-color: var(--primary); color: var(--white); }
+    .track-step.current .track-dot { border-color: var(--primary); color: var(--primary); box-shadow: 0 0 0 5px var(--primary-tint); }
+    .track-step.done::before, .track-step.current::before { background: var(--primary); }
+    .track-label { font-size: 0.82rem; font-weight: 600; color: var(--text-light); }
+    .track-step.done .track-label, .track-step.current .track-label { color: var(--text-dark); }
+    .sum-row { display: flex; justify-content: space-between; padding: 7px 0; font-size: 0.92rem; color: var(--text-light); }
+    .sum-row strong { color: var(--text-dark); }
+    .sum-total { border-top: 1px solid var(--border); margin-top: 8px; padding-top: 14px; }
+    .sum-total strong { font-family: var(--font-display); font-size: 1.2rem; color: var(--primary-dark); }
+    @@media (max-width: 992px) { .od-layout { grid-template-columns: 1fr; } }
+    @@media (max-width: 576px) { .track-label { font-size: 0.7rem; } }
+</style>
+
+<div class="dash-content-head">
+    <div>
+        <h1>Order #FM-@Model.Id <span class="badge @BadgeHelper.Css(Model.Status)" style="vertical-align:middle; margin-left:8px;">@Model.Status</span></h1>
+        <p>Placed on @Model.OrderDate.ToString("dd MMM yyyy, hh:mm tt")</p>
+    </div>
+    <a asp-area="Buyer" asp-controller="Orders" asp-action="Index" class="btn btn-outline"><i class="fa-solid fa-arrow-left"></i> All orders</a>
+</div>
+
+<div class="od-layout">
+    <div>
+        <div class="dash-panel">
+            <div class="dash-panel-head"><h2>Order Status</h2></div>
+            @if (cancelled)
+            {
+                <div class="alert alert-danger"><i class="fa-solid fa-ban"></i> This order was cancelled.</div>
+            }
+            else
+            {
+                <div class="track">
+                    @for (var i = 0; i < steps.Length; i++)
+                    {
+                        <div class="track-step @(i < current ? "done" : i == current ? "current" : "")">
+                            <div class="track-dot"><i class="fa-solid @steps[i].Item2"></i></div>
+                            <div class="track-label">@steps[i].Item1</div>
+                        </div>
+                    }
+                </div>
+            }
+        </div>
+
+        <div class="dash-panel" style="margin-top:24px;">
+            <div class="dash-panel-head"><h2>Items</h2></div>
+            <div class="table-scroll">
+                <table class="data-table">
+                    <thead><tr><th>Product</th><th>Farmer</th><th>Quantity</th><th>Price</th><th>Total</th></tr></thead>
+                    <tbody>
+                        @foreach (var l in Model.Lines)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="table-product">
+                                        <img src="@(string.IsNullOrEmpty(l.ImagePath) ? "/images/placeholder.svg" : l.ImagePath)" alt="" onerror="this.onerror=null;this.src='/images/placeholder.svg';" />
+                                        <a asp-area="" asp-controller="Marketplace" asp-action="Details" asp-route-id="@l.ProductId">@l.Name</a>
+                                    </div>
+                                </td>
+                                <td>@l.FarmerName</td>
+                                <td>@l.Quantity @l.Unit</td>
+                                <td>₹@l.UnitPrice.ToString("N0")</td>
+                                <td>₹@l.LineTotal.ToString("N0")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div>
+        <div class="dash-panel">
+            <div class="dash-panel-head"><h2>Summary</h2></div>
+            <div class="sum-row"><span>Subtotal</span><strong>₹@Model.Subtotal.ToString("N0")</strong></div>
+            <div class="sum-row"><span>Delivery</span><strong>@(Model.DeliveryFee == 0 ? "Free" : "₹" + Model.DeliveryFee.ToString("N0"))</strong></div>
+            <div class="sum-row sum-total"><span>Total</span><strong>₹@Model.Total.ToString("N0")</strong></div>
+            <div class="sum-row" style="margin-top:6px;"><span>Payment</span><strong>@Model.PaymentMethod</strong></div>
+        </div>
+
+        <div class="dash-panel" style="margin-top:24px;">
+            <div class="dash-panel-head"><h2>Delivery Address</h2></div>
+            <p style="white-space:pre-line; font-size:0.92rem; color:var(--text-light);">@(string.IsNullOrWhiteSpace(Model.DeliveryAddress) ? "Not provided" : Model.DeliveryAddress)</p>
+        </div>
+
+        <div class="dash-panel" style="margin-top:24px;">
+            <div class="dash-panel-head"><h2>Need help?</h2></div>
+            <div style="display:flex; flex-direction:column; gap:10px;">
+                <a asp-area="Buyer" asp-controller="Complaints" asp-action="Index" asp-route-orderId="@Model.Id" class="btn btn-outline"><i class="fa-solid fa-triangle-exclamation"></i> Raise a complaint</a>
+                @if (Model.Status == "Pending")
+                {
+                    <form asp-area="Buyer" asp-controller="Orders" asp-action="Cancel" asp-route-id="@Model.Id" method="post"
+                          data-confirm="The items go back on sale and this can't be undone." data-confirm-title="Cancel this order?" data-confirm-button="Cancel order" data-danger="true">
+                        <button type="submit" class="btn btn-danger btn-block"><i class="fa-solid fa-ban"></i> Cancel order</button>
+                    </form>
+                }
+            </div>
+        </div>
+    </div>
+</div>

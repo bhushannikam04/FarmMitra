@@ -1,0 +1,179 @@
+@using Microsoft.AspNetCore.Identity
+@using Microsoft.EntityFrameworkCore
+@inject FarmMitra.Data.ApplicationDbContext Db
+@inject UserManager<ApplicationUser> UserManager
+@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString();
+    var me = await UserManager.GetUserAsync(User);
+    var uid = me?.Id ?? "";
+    var cartCount = await Db.CartItems.CountAsync(c => c.BuyerId == uid);
+    var activeStatuses = new[] { "Pending", "Confirmed", "Shipped" };
+    var activeOrders = await Db.Orders.CountAsync(o => o.BuyerId == uid && activeStatuses.Contains(o.Status));
+    var unreadChats = await FarmMitra.Data.ChatHelper.UnreadCountAsync(Db, uid);
+    var initial = string.IsNullOrEmpty(me?.FullName) ? "B" : me!.FullName.Substring(0, 1).ToUpper();
+    string ActiveIf(bool on) => on ? "active" : "";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Buyer - Farm Mitra</title>
+    <link rel="stylesheet" href="~/css/style.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/responsive.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/chat.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/account.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <style>
+        .dash-sidebar-foot button { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 12px; border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 500; color: var(--danger); transition: background 0.16s var(--ease); }
+        .dash-sidebar-foot button:hover { background: var(--danger-tint); }
+        .dash-nav a.disabled { opacity: 0.55; pointer-events: none; }
+        .dash-topbar-title { font-family: var(--font-display); font-weight: 600; font-size: 1.05rem; }
+        .avatar-initial { width: 40px; height: 40px; border-radius: 50%; background: var(--primary); color: var(--white); display: flex; align-items: center; justify-content: center; font-weight: 700; }
+        .cell-sub { display: block; color: var(--text-light); font-size: 0.78rem; }
+        .table-scroll { overflow-x: auto; }
+        .empty-row td { text-align: center; color: var(--text-light); padding: 36px 14px !important; }
+        .select-sm { width: auto; padding: 7px 10px; font-size: 0.82rem; }
+        .cart-pill { position: relative; }
+        .cart-pill .cart-badge { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 999px; background: var(--accent); color: var(--primary-dark); font-size: 0.7rem; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+        .validation-summary-valid { display: none; }
+        .validation-summary-errors ul { margin: 0; padding-left: 18px; list-style: disc; }
+        .field-error { color: var(--danger); font-size: 0.8rem; margin-top: 5px; display: block; }
+        .field-error:empty { display: none; }
+        .input.input-validation-error { border-color: var(--danger); }
+        dialog#confirm-dialog { border: none; border-radius: var(--radius-md); padding: 30px; max-width: 420px; width: 92%; box-shadow: var(--shadow-lg); font-family: var(--font-body); }
+        dialog#confirm-dialog::backdrop { background: rgba(18, 64, 26, 0.45); }
+        dialog#confirm-dialog h3 { font-size: 1.15rem; margin-bottom: 8px; }
+        dialog#confirm-dialog p { color: var(--text-light); font-size: 0.92rem; margin-bottom: 24px; }
+        .cd-actions { display: flex; justify-content: flex-end; gap: 10px; }
+    </style>
+    <link rel="stylesheet" href="~/css/theme.css" asp-append-version="true" />
+    <meta name="theme-color" content="#1B5E20" />
+    <script src="~/js/theme.js"></script>
+    <link rel="stylesheet" href="~/css/lang.css" asp-append-version="true" />
+    <script src="~/js/lang.js" defer></script>
+</head>
+<body>
+
+<div class="dash-body">
+    <div class="dash-overlay"></div>
+
+    <aside class="dash-sidebar">
+        <div class="dash-sidebar-head">
+            <a href="~/" class="brand">
+                <span class="brand-mark">FM</span>
+                <span class="brand-text">Farm Mitra</span>
+            </a>
+        </div>
+
+        <nav class="dash-nav">
+            <div class="dash-nav-label">Main</div>
+            <a asp-area="Buyer" asp-controller="Dashboard" asp-action="Index" class="@ActiveIf(controller == "Dashboard")"><i class="fa-solid fa-grip"></i> Dashboard</a>
+            <a asp-area="" asp-controller="Marketplace" asp-action="Index"><i class="fa-solid fa-basket-shopping"></i> Marketplace</a>
+
+            <div class="dash-nav-label">Shopping</div>
+            <a asp-area="Buyer" asp-controller="Cart" asp-action="Index" class="@ActiveIf(controller == "Cart")">
+                <i class="fa-solid fa-cart-shopping"></i> My Cart
+                @if (cartCount > 0) { <span class="nav-count">@cartCount</span> }
+            </a>
+            <a asp-area="Buyer" asp-controller="Orders" asp-action="Index" class="@ActiveIf(controller == "Orders")">
+                <i class="fa-solid fa-bag-shopping"></i> My Orders
+                @if (activeOrders > 0) { <span class="nav-count">@activeOrders</span> }
+            </a>
+            <a asp-area="Buyer" asp-controller="Complaints" asp-action="Index" class="@ActiveIf(controller == "Complaints")"><i class="fa-solid fa-triangle-exclamation"></i> Complaints</a>
+            <a asp-area="Buyer" asp-controller="Messages" asp-action="Index" class="@ActiveIf(controller == "Messages")">
+                <i class="fa-solid fa-comment-dots"></i> Messages
+                @if (unreadChats > 0) { <span class="nav-count">@unreadChats</span> }
+            </a>
+
+            <div class="dash-nav-label">Account</div>
+            <a asp-area="Buyer" asp-controller="Profile" asp-action="Index" class="@ActiveIf(controller == "Profile" && !(ViewContext.RouteData.Values["action"]?.ToString() is "Security" or "ChangePassword"))"><i class="fa-solid fa-user"></i> Profile</a>
+            <a asp-area="Buyer" asp-controller="Profile" asp-action="Security" class="@ActiveIf(controller == "Profile" && (ViewContext.RouteData.Values["action"]?.ToString() is "Security" or "ChangePassword"))"><i class="fa-solid fa-gear"></i> Settings</a>
+        </nav>
+
+        <div class="dash-sidebar-foot">
+            <form asp-area="" asp-controller="Account" asp-action="Logout" method="post">
+                <button type="submit"><i class="fa-solid fa-right-from-bracket"></i> Logout</button>
+            </form>
+        </div>
+    </aside>
+
+    <div class="dash-main">
+        <header class="dash-topbar">
+            <button class="dash-topbar-mobile-toggle btn-icon btn-outline" aria-label="Toggle menu">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+
+            <div class="dash-topbar-title">@ViewData["Title"]</div>
+
+            <div class="dash-topbar-actions">
+                <partial name="_LanguagePicker" />
+                <partial name="_ThemeToggle" />
+                <a asp-area="Buyer" asp-controller="Cart" asp-action="Index" class="dash-topbar-icon-btn cart-pill" aria-label="Cart">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    @if (cartCount > 0) { <span class="cart-badge">@cartCount</span> }
+                </a>
+                <div class="dash-user">
+                    @if (!string.IsNullOrEmpty(me?.ProfileImagePath)) { <img class="avatar-img" src="@me!.ProfileImagePath" alt="" /> }
+                    else { <div class="avatar-initial">@initial</div> }
+                    <div>
+                        <div class="name">@(me?.FullName ?? "Buyer")</div>
+                        <div class="role">Buyer</div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="dash-content">
+            @if (TempData["Success"] is string ok)
+            {
+                <div class="alert alert-success" style="margin-bottom:22px;"><i class="fa-solid fa-circle-check"></i> @ok</div>
+            }
+            @if (TempData["Error"] is string err)
+            {
+                <div class="alert alert-danger" style="margin-bottom:22px;"><i class="fa-solid fa-circle-exclamation"></i> @err</div>
+            }
+
+            @RenderBody()
+        </main>
+    </div>
+</div>
+
+<dialog id="confirm-dialog">
+    <h3 id="cd-title">Are you sure?</h3>
+    <p id="cd-msg"></p>
+    <div class="cd-actions">
+        <button type="button" class="btn btn-outline" id="cd-cancel">Cancel</button>
+        <button type="button" class="btn btn-primary" id="cd-ok">Confirm</button>
+    </div>
+</dialog>
+
+<script src="~/js/main.js" asp-append-version="true"></script>
+<script>
+    // Any <form data-confirm="..."> shows a confirmation dialog before it submits.
+    (function () {
+        const dlg = document.getElementById('confirm-dialog');
+        const title = document.getElementById('cd-title');
+        const msg = document.getElementById('cd-msg');
+        const ok = document.getElementById('cd-ok');
+        let pending = null;
+
+        document.addEventListener('submit', function (e) {
+            const form = e.target;
+            if (!form.dataset || !form.dataset.confirm) return;
+            e.preventDefault();
+            pending = form;
+            title.textContent = form.dataset.confirmTitle || 'Are you sure?';
+            msg.textContent = form.dataset.confirm;
+            ok.textContent = form.dataset.confirmButton || 'Confirm';
+            ok.className = 'btn ' + (form.dataset.danger === 'true' ? 'btn-danger' : 'btn-primary');
+            dlg.showModal();
+        });
+
+        document.getElementById('cd-cancel').addEventListener('click', () => { pending = null; dlg.close(); });
+        ok.addEventListener('click', () => { const f = pending; pending = null; dlg.close(); if (f) f.submit(); });
+    })();
+</script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
